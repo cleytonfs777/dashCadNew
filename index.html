@@ -266,7 +266,10 @@
       border-radius: var(--r22);
       box-shadow: var(--shadow);
       padding:14px;
+      max-height:600px;
+      overflow-y:auto;
     }
+    .card.full{max-height:none;}
     .cardHeader{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
     .cardHeader h4{margin:0; font-size:13px; letter-spacing:.06em; text-transform:uppercase; color: rgba(232,238,252,.90);}
     .hint{font-size:12px;color:var(--muted)}
@@ -495,7 +498,7 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card full">
         <div class="cardHeader">
           <h4>Detalhes (tabela)</h4>
           <div class="hint">busca + paginação + export</div>
@@ -613,7 +616,7 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card full">
         <div class="cardHeader">
           <h4>Naturezas (tabela)</h4>
           <div class="hint">volume • % • medianas</div>
@@ -659,7 +662,7 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card full">
         <div class="cardHeader">
           <h4>Unidades (tabela)</h4>
           <div class="hint">volume • eficiência</div>
@@ -1257,6 +1260,10 @@ const Charts = (() => {
 
     if (!series.length){ empty(ctx,w,h,"Sem dados no período"); return; }
 
+    // Zoom state
+    if (!canvas._zoomLevel) canvas._zoomLevel = 1.0;
+    if (!canvas._scrollOffset) canvas._scrollOffset = 0;
+
     const ys = series.map(p=>p.y);
     const maxY = Math.max(1, ...ys);
 
@@ -1267,38 +1274,118 @@ const Charts = (() => {
       ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke();
     }
 
-    const xStep = (w-2*pad)/Math.max(1, series.length-1);
+    const baseXStep = (w-2*pad)/Math.max(1, series.length-1);
+    const xStep = baseXStep * canvas._zoomLevel;
+    const totalContentWidth = xStep * (series.length - 1);
+
+    // Área de clipping
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad, pad, w-2*pad, h-2*pad);
+    ctx.clip();
 
     // line
     ctx.lineWidth = 2.6;
     ctx.strokeStyle = "rgba(83,177,253,.95)";
     ctx.beginPath();
     series.forEach((p,i)=>{
-      const x = pad + i*xStep;
+      const x = pad + i*xStep - canvas._scrollOffset;
       const y = (h-pad) - (p.y/maxY)*(h-2*pad);
-      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      if (x < pad - 20 || x > w - pad + 20) return;
+      i===0 || (i > 0 && pad + (i-1)*xStep - canvas._scrollOffset < pad - 20) ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
     });
     ctx.stroke();
 
     // points
     ctx.fillStyle = "rgba(255,122,24,.95)";
     series.forEach((p,i)=>{
-      const x = pad + i*xStep;
+      const x = pad + i*xStep - canvas._scrollOffset;
+      if (x < pad - 5 || x > w - pad + 5) return;
       const y = (h-pad) - (p.y/maxY)*(h-2*pad);
       ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill();
     });
 
-    // labels
+    ctx.restore();
+
+    // labels eixo Y
     ctx.fillStyle = "rgba(232,238,252,.75)";
     ctx.font = `400 ${Math.floor(h*0.05)}px ${getFont()}`;
     ctx.fillText("0", pad-16, h-pad+18);
     ctx.fillText(String(maxY), 10, pad+10);
 
-    const showEvery = Math.ceil(series.length/6);
+    // labels eixo X com scroll
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad, h-pad, w-2*pad, 40);
+    ctx.clip();
+    
+    const showEvery = Math.max(1, Math.ceil(series.length/8));
     for (let i=0;i<series.length;i+=showEvery){
-      const x = pad + i*xStep;
-      const label = series[i].x.slice(5); // MM-DD
-      ctx.fillText(label, x-18, h-pad+32);
+      const x = pad + i*xStep - canvas._scrollOffset;
+      if (x >= pad - 20 && x <= w - pad + 20){
+        const label = series[i].x.slice(5);
+        ctx.fillText(label, x-18, h-pad+32);
+      }
+    }
+    ctx.restore();
+
+    // Instrução
+    if (totalContentWidth > w - 2*pad) {
+      ctx.fillStyle = "rgba(169,183,223,.65)";
+      ctx.font = `400 ${Math.floor(h*0.032)}px ${getFont()}`;
+      ctx.fillText("🔍 Scroll p/ zoom • Arraste p/ mover", w - 220, h - 8);
+    }
+
+    // Guardar dados
+    canvas._chartSeries = series;
+    canvas._totalContentWidth = totalContentWidth;
+    canvas._visibleWidth = w - 2*pad;
+
+    // Event listeners
+    if (!canvas._lineListenersAdded) {
+      canvas._lineListenersAdded = true;
+      
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        canvas._zoomLevel = Math.max(0.5, Math.min(5, canvas._zoomLevel * delta));
+        const newTotalWidth = ((w-2*pad)/Math.max(1, canvas._chartSeries.length-1)) * canvas._zoomLevel * (canvas._chartSeries.length - 1);
+        const maxScroll = Math.max(0, newTotalWidth - canvas._visibleWidth);
+        canvas._scrollOffset = Math.min(canvas._scrollOffset, maxScroll);
+        line(canvas, canvas._chartSeries);
+      });
+      
+      let isDragging = false;
+      let startX = 0;
+      let startOffset = 0;
+      
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startOffset = canvas._scrollOffset || 0;
+        canvas.style.cursor = 'grabbing';
+      });
+      
+      canvas.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = startX - e.clientX;
+        const dpr = window.devicePixelRatio || 1;
+        const maxScroll = Math.max(0, canvas._totalContentWidth - canvas._visibleWidth);
+        canvas._scrollOffset = Math.max(0, Math.min(maxScroll, startOffset + dx * dpr));
+        line(canvas, canvas._chartSeries);
+      });
+      
+      canvas.addEventListener('mouseup', () => {
+        isDragging = false;
+        canvas.style.cursor = 'default';
+      });
+      
+      canvas.addEventListener('mouseleave', () => {
+        if (isDragging) {
+          isDragging = false;
+          canvas.style.cursor = 'default';
+        }
+      });
     }
   }
 
@@ -1314,6 +1401,10 @@ const Charts = (() => {
 
     if (!multi.length || !multi[0].points.length){ empty(ctx,w,h,"Sem dados no período"); return; }
 
+    // Zoom state
+    if (!canvas._zoomLevel) canvas._zoomLevel = 1.0;
+    if (!canvas._scrollOffset) canvas._scrollOffset = 0;
+
     const n = multi[0].points.length;
     const maxY = Math.max(1, ...multi.flatMap(s => s.points.map(p=>p.y)));
 
@@ -1323,7 +1414,10 @@ const Charts = (() => {
       ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke();
     }
 
-    const xStep = (w-2*pad)/Math.max(1, n-1);
+    const baseXStep = (w-2*pad)/Math.max(1, n-1);
+    const xStep = baseXStep * canvas._zoomLevel;
+    const totalContentWidth = xStep * (n - 1);
+
     const colors = [
       "rgba(83,177,253,.95)",
       "rgba(255,122,24,.95)",
@@ -1331,37 +1425,125 @@ const Charts = (() => {
       "rgba(168,85,247,.92)"
     ];
 
+    // Área de clipping
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad, pad, w-2*pad, h-2*pad);
+    ctx.clip();
+
     multi.forEach((s, idx)=>{
       ctx.lineWidth = 2.3;
       ctx.strokeStyle = colors[idx % colors.length];
       ctx.beginPath();
       s.points.forEach((p,i)=>{
-        const x = pad + i*xStep;
+        const x = pad + i*xStep - canvas._scrollOffset;
         const y = (h-pad) - (p.y/maxY)*(h-2*pad);
-        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+        if (x < pad - 20 || x > w - pad + 20) return;
+        i===0 || (i > 0 && pad + (i-1)*xStep - canvas._scrollOffset < pad - 20) ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
       });
       ctx.stroke();
     });
 
-    // legend
-    const lx = w - pad + 8;
-    const ly = pad;
-    ctx.font = `400 ${Math.floor(h*0.045)}px ${getFont()}`;
+    ctx.restore();
+
+    // legend (canto superior direito)
+    const numL = Math.min(4, multi.length);
+    const legendW = 100;
+    const legendH = numL * 18 + 10;
+    const lx = w - legendW - 10;
+    const ly = 8;
+    
+    // fundo semi-transparente
+    ctx.fillStyle = "rgba(11,18,32,.85)";
+    ctx.fillRect(lx - 6, ly - 4, legendW + 12, legendH);
+    ctx.strokeStyle = "rgba(255,255,255,.15)";
+    ctx.strokeRect(lx - 6, ly - 4, legendW + 12, legendH);
+    
+    ctx.font = `400 ${Math.floor(h*0.040)}px ${getFont()}`;
     multi.slice(0,4).forEach((s, idx)=>{
-      const y = ly + idx*18;
+      const y = ly + 10 + idx*16;
       ctx.fillStyle = colors[idx % colors.length];
-      ctx.fillRect(lx, y-10, 10, 10);
-      ctx.fillStyle = "rgba(232,238,252,.78)";
-      ctx.fillText(s.name, lx+14, y);
+      ctx.fillRect(lx, y-8, 10, 10);
+      ctx.fillStyle = "rgba(232,238,252,.86)";
+      const name = s.name.length > 12 ? s.name.slice(0,12)+"…" : s.name;
+      ctx.fillText(name, lx+14, y);
     });
 
-    // x labels
+    // x labels com scroll
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad, h-pad, w-2*pad, 40);
+    ctx.clip();
+    
     ctx.fillStyle = "rgba(232,238,252,.75)";
-    const showEvery = Math.ceil(n/6);
+    const showEvery = Math.max(1, Math.ceil(n/8));
     for (let i=0;i<n;i+=showEvery){
-      const x = pad + i*xStep;
-      const label = multi[0].points[i].x.slice(5);
-      ctx.fillText(label, x-18, h-pad+32);
+      const x = pad + i*xStep - canvas._scrollOffset;
+      if (x >= pad - 20 && x <= w - pad + 20){
+        const label = multi[0].points[i].x.slice(5);
+        ctx.fillText(label, x-18, h-pad+32);
+      }
+    }
+    ctx.restore();
+
+    // Instrução
+    if (totalContentWidth > w - 2*pad) {
+      ctx.fillStyle = "rgba(169,183,223,.65)";
+      ctx.font = `400 ${Math.floor(h*0.032)}px ${getFont()}`;
+      ctx.fillText("🔍 Scroll p/ zoom • Arraste p/ mover", w - 220, h - 8);
+    }
+
+    // Guardar dados
+    canvas._chartMulti = multi;
+    canvas._totalContentWidth = totalContentWidth;
+    canvas._visibleWidth = w - 2*pad;
+
+    // Event listeners
+    if (!canvas._multiLineListenersAdded) {
+      canvas._multiLineListenersAdded = true;
+      
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        canvas._zoomLevel = Math.max(0.5, Math.min(5, canvas._zoomLevel * delta));
+        const nn = canvas._chartMulti[0].points.length;
+        const newTotalWidth = ((w-2*pad)/Math.max(1, nn-1)) * canvas._zoomLevel * (nn - 1);
+        const maxScroll = Math.max(0, newTotalWidth - canvas._visibleWidth);
+        canvas._scrollOffset = Math.min(canvas._scrollOffset, maxScroll);
+        multiLine(canvas, canvas._chartMulti);
+      });
+      
+      let isDragging = false;
+      let startX = 0;
+      let startOffset = 0;
+      
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startOffset = canvas._scrollOffset || 0;
+        canvas.style.cursor = 'grabbing';
+      });
+      
+      canvas.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = startX - e.clientX;
+        const dpr = window.devicePixelRatio || 1;
+        const maxScroll = Math.max(0, canvas._totalContentWidth - canvas._visibleWidth);
+        canvas._scrollOffset = Math.max(0, Math.min(maxScroll, startOffset + dx * dpr));
+        multiLine(canvas, canvas._chartMulti);
+      });
+      
+      canvas.addEventListener('mouseup', () => {
+        isDragging = false;
+        canvas.style.cursor = 'default';
+      });
+      
+      canvas.addEventListener('mouseleave', () => {
+        if (isDragging) {
+          isDragging = false;
+          canvas.style.cursor = 'default';
+        }
+      });
     }
   }
 
@@ -1373,15 +1555,31 @@ const Charts = (() => {
 
     if (!items.length){ empty(ctx,w,h,"Sem dados no período"); return; }
 
+    // Zoom state
+    if (!canvas._zoomLevel) canvas._zoomLevel = 1.0;
+    if (!canvas._scrollOffset) canvas._scrollOffset = 0;
+
     const maxV = Math.max(1, ...items.map(i=>i.value));
-    const padY = Math.floor(h*0.10);
-    const barH = Math.max(18, Math.floor((h - 2*padY) / items.length) - 8);
-    const gap = 10;
+    const padY = Math.floor(h*0.08);
+    const baseBarH = 28;
+    const barHeight = Math.max(18, baseBarH * canvas._zoomLevel);
+    const gap = 8 * canvas._zoomLevel;
+    const totalContentHeight = items.length * (barHeight + gap);
 
     ctx.font = `400 ${Math.floor(h*0.045)}px ${getFont()}`;
 
+    // Área de clipping para scroll
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, padY, w, h - 2*padY);
+    ctx.clip();
+
     items.forEach((it, idx)=>{
-      const y = padY + idx*(barH+gap);
+      const y = padY + idx*(barHeight+gap) - canvas._scrollOffset;
+      
+      // Pular se estiver fora da área visível
+      if (y + barHeight < padY || y > h - padY) return;
+      
       const left = Math.floor(w*0.34);
       const right = w - 18;
       const fullW = right - left;
@@ -1390,23 +1588,88 @@ const Charts = (() => {
       // label
       ctx.fillStyle = "rgba(232,238,252,.84)";
       const name = it.label.length > 40 ? it.label.slice(0,40)+"…" : it.label;
-      ctx.fillText(name, 18, y + barH - 4);
+      ctx.fillText(name, 18, y + barHeight - 4);
 
       // bg
       ctx.fillStyle = "rgba(255,255,255,.06)";
-      ctx.fillRect(left, y, fullW, barH);
+      ctx.fillRect(left, y, fullW, barHeight);
 
       // bar
       const grad = ctx.createLinearGradient(left,0,left+bw,0);
       grad.addColorStop(0, "rgba(255,122,24,.95)");
       grad.addColorStop(1, "rgba(83,177,253,.95)");
       ctx.fillStyle = grad;
-      ctx.fillRect(left, y, bw, barH);
+      ctx.fillRect(left, y, bw, barHeight);
 
       // value
       ctx.fillStyle = "rgba(232,238,252,.92)";
-      ctx.fillText(valueLabelFn(it.value), left + bw + 10, y + barH - 4);
+      ctx.fillText(valueLabelFn(it.value), left + bw + 10, y + barHeight - 4);
     });
+
+    ctx.restore();
+
+    // Instrução de scroll
+    if (totalContentHeight > h - 2*padY) {
+      ctx.fillStyle = "rgba(169,183,223,.65)";
+      ctx.font = `400 ${Math.floor(h*0.032)}px ${getFont()}`;
+      ctx.fillText("🔍 Scroll p/ zoom • Arraste p/ mover", w - 220, h - 8);
+    }
+
+    // Guardar dados para interação
+    canvas._chartItems = items;
+    canvas._chartValueLabelFn = valueLabelFn;
+    canvas._totalContentHeight = totalContentHeight;
+    canvas._visibleHeight = h - 2*padY;
+
+    // Adicionar event listeners se ainda não existem
+    if (!canvas._barHListenersAdded) {
+      canvas._barHListenersAdded = true;
+      
+      // Mouse wheel para zoom
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        canvas._zoomLevel = Math.max(0.5, Math.min(3, canvas._zoomLevel * delta));
+        // Ajustar scroll offset após zoom
+        const newTotalHeight = canvas._chartItems.length * (Math.max(18, 28 * canvas._zoomLevel) + 8 * canvas._zoomLevel);
+        const maxScroll = Math.max(0, newTotalHeight - canvas._visibleHeight);
+        canvas._scrollOffset = Math.min(canvas._scrollOffset, maxScroll);
+        barH(canvas, canvas._chartItems, canvas._chartValueLabelFn);
+      });
+      
+      // Drag para scroll vertical
+      let isDragging = false;
+      let startY = 0;
+      let startOffset = 0;
+      
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startY = e.clientY;
+        startOffset = canvas._scrollOffset || 0;
+        canvas.style.cursor = 'grabbing';
+      });
+      
+      canvas.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dy = startY - e.clientY;
+        const dpr = window.devicePixelRatio || 1;
+        const maxScroll = Math.max(0, canvas._totalContentHeight - canvas._visibleHeight);
+        canvas._scrollOffset = Math.max(0, Math.min(maxScroll, startOffset + dy * dpr));
+        barH(canvas, canvas._chartItems, canvas._chartValueLabelFn);
+      });
+      
+      canvas.addEventListener('mouseup', () => {
+        isDragging = false;
+        canvas.style.cursor = 'default';
+      });
+      
+      canvas.addEventListener('mouseleave', () => {
+        if (isDragging) {
+          isDragging = false;
+          canvas.style.cursor = 'default';
+        }
+      });
+    }
   }
 
   function donut(canvas, items){
@@ -1622,17 +1885,27 @@ const Charts = (() => {
     }
     ctx.restore();
 
-    // legenda
-    const legendX = pad + 10;
-    const legendY = pad + 10;
-    ctx.font = `400 ${Math.floor(h*0.044)}px ${getFont()}`;
-    series.forEach((s, idx)=>{
-      const y = legendY + idx*18;
+    // legenda (canto superior direito, fora da área do gráfico)
+    const legendW = 120;
+    const legendH = Math.min(numSeries * 18 + 10, h - pad - 40);
+    const legendX = w - legendW - 8;
+    const legendY = 8;
+    
+    // fundo semi-transparente para legenda
+    ctx.fillStyle = "rgba(11,18,32,.85)";
+    ctx.fillRect(legendX - 6, legendY - 4, legendW + 12, legendH + 8);
+    ctx.strokeStyle = "rgba(255,255,255,.15)";
+    ctx.strokeRect(legendX - 6, legendY - 4, legendW + 12, legendH + 8);
+    
+    ctx.font = `400 ${Math.floor(h*0.038)}px ${getFont()}`;
+    const maxLegendItems = Math.floor((legendH - 10) / 16);
+    series.slice(0, maxLegendItems).forEach((s, idx)=>{
+      const y = legendY + 10 + idx*16;
       ctx.fillStyle = colors[idx % colors.length];
-      ctx.fillRect(legendX, y-10, 12, 12);
+      ctx.fillRect(legendX, y-8, 10, 10);
       ctx.fillStyle = "rgba(232,238,252,.86)";
-      const name = s.name.length > 18 ? s.name.slice(0,18)+"…" : s.name;
-      ctx.fillText(name, legendX+16, y);
+      const name = s.name.length > 14 ? s.name.slice(0,14)+"…" : s.name;
+      ctx.fillText(name, legendX+14, y);
     });
     
     // Instrução de zoom
