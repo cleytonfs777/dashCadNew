@@ -1,0 +1,2567 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>CBMMG • Central de Atendimento — Dashboard (CSV)</title>
+  <style>
+    :root{
+      --bg0:#070b14;
+      --bg1:#0b1220;
+      --panel:#0f1a30;
+      --panel2:#111f3a;
+      --card: rgba(255,255,255,.04);
+      --border: rgba(255,255,255,.10);
+      --border2: rgba(255,255,255,.06);
+      --text:#e8eefc;
+      --muted:#a9b7df;
+      --accent:#ff7a18;
+      --accent2:#53b1fd;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --shadow: 0 18px 55px rgba(0,0,0,.38);
+      --r16:16px;
+      --r22:22px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 15% -10%, rgba(83,177,253,.22), transparent 60%),
+        radial-gradient(900px 600px at 90% 10%, rgba(255,122,24,.18), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg0) 85%);
+    }
+    .app{
+      display:grid;
+      grid-template-columns: 370px 1fr;
+      min-height:100vh;
+    }
+    @media (max-width: 1100px){ .app{grid-template-columns:1fr;} }
+
+    /* Sidebar */
+    .sidebar{
+      border-right:1px solid var(--border2);
+      background: linear-gradient(180deg, rgba(17,31,58,.88), rgba(11,18,32,.70));
+      padding:16px;
+      backdrop-filter: blur(10px);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      padding:12px;
+      border:1px solid var(--border2);
+      border-radius: var(--r22);
+      background: rgba(255,255,255,.03);
+      box-shadow: var(--shadow);
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .logo{
+      width:44px;height:44px;border-radius:16px;
+      display:grid;place-items:center;
+      background: linear-gradient(135deg, rgba(255,122,24,.95), rgba(83,177,253,.95));
+      font-weight:900; letter-spacing:.5px;
+    }
+    .brand h1{margin:0;font-size:13px;line-height:1.1;word-wrap:break-word;overflow-wrap:break-word;}
+    .brand p{margin:4px 0 0;font-size:12px;color:var(--muted);word-wrap:break-word;overflow-wrap:break-word;}
+    .brand > div{min-width:0;flex:1;}
+
+    .nav{
+      margin-top:12px;
+      display:flex; flex-direction:column; gap:8px;
+      max-width:100%;
+    }
+    .nav button{
+      width:100%;
+      text-align:left;
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.03);
+      color: rgba(232,238,252,.92);
+      padding:10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      transition: transform .06s ease, border-color .15s ease, background .15s ease;
+      word-wrap:break-word;
+      overflow-wrap:break-word;
+      white-space: normal;
+    }
+    .nav button:hover{transform: translateY(-1px); border-color: rgba(255,255,255,.16)}
+    .nav button.active{
+      background: linear-gradient(135deg, rgba(255,122,24,.20), rgba(83,177,253,.12));
+      border-color: rgba(83,177,253,.35);
+    }
+    .nav small{display:block;color:var(--muted); margin-top:2px;word-wrap:break-word;overflow-wrap:break-word;}
+
+    .panel{
+      margin-top:12px;
+      padding:14px;
+      border:1px solid var(--border2);
+      border-radius: var(--r22);
+      background: rgba(255,255,255,.03);
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .panel h2{
+      margin:0 0 10px;
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:rgba(232,238,252,.86);
+      word-wrap:break-word;
+      overflow-wrap:break-word;
+    }
+    .field{margin:10px 0;max-width:100%;box-sizing:border-box;}
+    .label{font-size:12px;color:var(--muted);margin:0 0 6px;word-wrap:break-word;overflow-wrap:break-word;max-width:100%;}
+    input, select, button, textarea{
+      font:inherit;
+      color:var(--text);
+      background: rgba(255,255,255,.05);
+      border:1px solid var(--border2);
+      border-radius: 12px;
+      padding:10px 12px;
+      outline:none;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(83,177,253,.55);
+      box-shadow: 0 0 0 4px rgba(83,177,253,.15);
+    }
+    textarea{min-height:86px; resize:vertical; width:100%;}
+    .row2{display:grid; grid-template-columns: 1fr 1fr; gap:10px;max-width:100%;box-sizing:border-box;}
+    @media(max-width:1100px){ .row2{grid-template-columns:1fr;} }
+    .sidebar .row2{grid-template-columns:1fr;}
+
+    .toggle{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border:1px solid var(--border2);
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .toggle input{width:auto; margin:0; accent-color: var(--accent);}
+    .toggle span{font-size:13px; color: rgba(232,238,252,.92);word-wrap:break-word;overflow-wrap:break-word;}
+
+    .btnRow{display:flex; gap:10px; flex-wrap:wrap;max-width:100%;}
+    .btn{
+      width:auto;
+      cursor:pointer;
+      transition: transform .06s ease, border-color .15s ease, background .15s ease;
+      word-wrap:break-word;
+      overflow-wrap:break-word;
+      white-space: normal;
+    }
+    .btn:hover{transform: translateY(-1px); border-color: rgba(255,255,255,.16)}
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(255,122,24,.95), rgba(255,122,24,.65));
+      border-color: rgba(255,122,24,.35);
+      font-weight:800;
+    }
+    .btn.ghost{background: rgba(255,255,255,.04);}
+
+    .chipRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;max-width:100%;}
+    .chip{
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.04);
+      padding:6px 10px;
+      border-radius: 999px;
+      font-size:12px;
+      color: rgba(232,238,252,.90);
+      word-wrap:break-word;
+      overflow-wrap:break-word;
+      max-width:100%;
+    }
+
+    /* Main */
+    .main{padding:18px 18px 28px;}
+    .topbar{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      margin-bottom:14px;
+    }
+    .title h3{margin:0;font-size:18px;}
+    .title p{margin:6px 0 0; color:var(--muted); font-size:13px; max-width:900px;}
+    .status{
+      padding:10px 12px;
+      border:1px solid var(--border2);
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+      color: rgba(232,238,252,.90);
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+    /* Tabs pages */
+    .page{display:none;}
+    .page.active{display:block;}
+
+    /* KPIs */
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(6, minmax(0,1fr));
+      gap:12px;
+      margin-bottom:12px;
+    }
+    @media (max-width: 1600px){ .kpis{grid-template-columns: repeat(3, minmax(0,1fr));} }
+    @media (max-width: 720px){ .kpis{grid-template-columns: 1fr;} }
+    .kpi{
+      border:1px solid var(--border2);
+      background: linear-gradient(180deg, rgba(15,26,48,.92), rgba(15,26,48,.55));
+      border-radius: var(--r22);
+      box-shadow: var(--shadow);
+      padding:14px 14px 12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .kpi:before{
+      content:"";
+      position:absolute;
+      inset:-60px -60px auto auto;
+      width:170px; height:170px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,122,24,.30), transparent 56%);
+      transform: rotate(18deg);
+      pointer-events:none;
+    }
+    .kpi .head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+    .kpi .icon{
+      width:34px;height:34px;border-radius:14px;
+      display:grid;place-items:center;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--border2);
+      font-size:16px;
+    }
+    .kpi .t{font-size:12px; color:rgba(169,183,223,.92); margin:0;}
+    .kpi .v{font-size:22px; font-weight:900; margin:10px 0 0; letter-spacing:.2px;}
+    .kpi .s{margin:8px 0 0; font-size:12px; color:rgba(232,238,252,.80); line-height:1.25;}
+    .delta{
+      display:inline-flex; align-items:center; gap:6px;
+      margin-top:10px;
+      padding:6px 10px;
+      border-radius: 999px;
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.03);
+      font-size:12px;
+      color: rgba(232,238,252,.85);
+    }
+    .dot{width:8px;height:8px;border-radius:99px; background: var(--accent2); display:inline-block;}
+    .dot.good{background: var(--good);}
+    .dot.warn{background: var(--warn);}
+    .dot.bad{background: var(--bad);}
+
+    /* Cards */
+    .grid{display:grid; grid-template-columns: 1.2fr .8fr; gap:12px; margin-bottom:12px;}
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;}
+    @media(max-width: 1200px){ .grid,.grid2{grid-template-columns:1fr;} }
+
+    .card{
+      border:1px solid var(--border2);
+      background: linear-gradient(180deg, rgba(17,31,58,.82), rgba(11,18,32,.55));
+      border-radius: var(--r22);
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    .cardHeader{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
+    .cardHeader h4{margin:0; font-size:13px; letter-spacing:.06em; text-transform:uppercase; color: rgba(232,238,252,.90);}
+    .hint{font-size:12px;color:var(--muted)}
+
+    canvas{width:100%; height:400px; display:block;}
+    .small canvas{height:270px;}
+
+    /* Tables */
+    .tableControls{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .tableControls .left{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .tableWrap{overflow:auto; border-radius: 14px; border:1px solid var(--border2);}
+    table{width:100%; border-collapse: collapse; min-width: 1050px; background: rgba(255,255,255,.02);}
+    th,td{padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.06); font-size:12px;}
+    th{text-align:left; color:rgba(232,238,252,.85); position:sticky; top:0; background: rgba(11,18,32,.92); backdrop-filter: blur(6px);}
+    th[data-sort]:hover{background: rgba(15,26,48,.95); color: rgba(255,255,255,.95);}
+    .sort-indicator{margin-left:4px; font-size:10px; color: var(--accent2);}
+    tr:hover td{background: rgba(255,255,255,.03);}
+    .pager{display:flex; gap:10px; align-items:center;}
+    .muted{color:var(--muted)}
+    .note{margin-top:10px; font-size:12px; color: rgba(169,183,223,.9); line-height:1.35;word-wrap:break-word;overflow-wrap:break-word;max-width:100%;}
+    .warnBox{
+      margin-top:10px;
+      border:1px solid rgba(245,158,11,.25);
+      background: rgba(245,158,11,.08);
+      padding:10px 12px;
+      border-radius: 14px;
+      color: rgba(255,255,255,.92);
+      font-size:12px;
+      line-height:1.35;
+      word-wrap:break-word;
+      overflow-wrap:break-word;
+      max-width:100%;
+      box-sizing:border-box;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">CB</div>
+      <div>
+        <h1>Central CBMMG — Dashboard</h1>
+        <p>CSV local • performance operacional</p>
+      </div>
+    </div>
+
+    <div class="nav" id="nav">
+      <button class="active" data-page="filtersPage">Filtros <small>período, natureza, unidade, viatura</small></button>
+      <button data-page="overviewPage">Visão Geral <small>volume + distribuição + ranking</small></button>
+      <button data-page="timesPage">Tempos <small>delays entre status + P90</small></button>
+      <button data-page="naturesPage">Naturezas <small>top, tendência, grupos</small></button>
+      <button data-page="resourcesPage">Unidades/Viaturas <small>carga, ranking, eficiência</small></button>
+    </div>
+
+    <!-- LOAD -->
+    <div class="panel">
+      <h2>Carregar CSV</h2>
+      <div class="field">
+        <div class="label">Arquivo CSV</div>
+        <input id="fileInput" type="file" accept=".csv,text/csv"/>
+      </div>
+      <div class="field">
+        <div class="label">Ou cole o CSV (opcional)</div>
+        <textarea id="csvPaste" placeholder="Cole o conteúdo do CSV completo..."></textarea>
+      </div>
+      <div class="btnRow">
+        <button class="btn primary" id="btnLoad">Carregar</button>
+        <button class="btn ghost" id="btnClearData">Limpar</button>
+      </div>
+      <div class="note">
+        Parser robusto: aceita <b>DD/MM/YYYY HH:mm:ss</b> e <b>YYYY-MM-DD HH:mm:ss</b> • normaliza “n�o”.
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="panel" id="filtersPanel">
+      <h2>Filtros</h2>
+
+      <div class="row2">
+        <div class="field">
+          <div class="label">Início (data/hora)</div>
+          <input id="dtStart" type="datetime-local"/>
+        </div>
+        <div class="field">
+          <div class="label">Fim (data/hora)</div>
+          <input id="dtEnd" type="datetime-local"/>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="toggle">
+          <input id="onlyCentral" type="checkbox"/>
+          <span>Somente via central telefônica</span>
+        </div>
+        <div class="toggle">
+          <input id="onlyDespachado" type="checkbox"/>
+          <span>Somente despachadas</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label">Buscar natureza (código ou descrição)</div>
+        <input id="natureSearch" type="text" placeholder="Ex: P01001 ou VISTORIA..."/>
+      </div>
+      <div class="field">
+        <div class="label">Naturezas (multi-select)</div>
+        <select id="natureSelect" multiple size="7"></select>
+      </div>
+
+      <div class="field">
+        <div class="label">Buscar unidade_servico_nome</div>
+        <input id="unitSearch" type="text" placeholder="Ex: 8BBM/3CIA..."/>
+      </div>
+      <div class="field">
+        <div class="label">Unidades (multi-select)</div>
+        <select id="unitSelect" multiple size="6"></select>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <div class="label">Buscar recurso_prefixo</div>
+          <input id="resSearch" type="text" placeholder="Ex: APF-01377, VOB05609"/>
+        </div>
+        <div class="field">
+          <div class="label">Buscar viatura/placa</div>
+          <input id="vehSearch" type="text" placeholder="Ex: PUE8073"/>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <div class="label">Recursos (multi-select)</div>
+          <select id="resSelect" multiple size="6"></select>
+        </div>
+        <div class="field">
+          <div class="label">Viaturas (multi-select)</div>
+          <select id="vehSelect" multiple size="6"></select>
+        </div>
+      </div>
+
+      <div class="btnRow" style="margin-top:10px;">
+        <button class="btn primary" id="btnApply">Aplicar</button>
+        <button class="btn ghost" id="btnReset">Limpar filtros</button>
+      </div>
+
+      <div class="chipRow" id="chipRow"></div>
+
+      <div class="warnBox" id="qualityBox" style="display:none;"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="title">
+        <h3 id="pageTitle">Filtros</h3>
+        <p id="pageSubtitle">Carregue o CSV e defina o período (padrão: mais antigo → mais novo). Depois navegue pelas abas.</p>
+      </div>
+      <div class="status" id="statusBox">Sem dados carregados</div>
+    </div>
+
+    <!-- PAGE: FILTERS -->
+    <section class="page active" id="filtersPage">
+      <div class="card">
+        <div class="cardHeader">
+          <h4>Como este painel ajuda a decisão</h4>
+          <div class="hint">operacional • tempos • carga</div>
+        </div>
+        <div class="note">
+          <b>O foco aqui é tempo-resposta real.</b> A partir dos status do CSV (despachado, a_caminho, no_local, em_controle, terminado),
+          o painel calcula:
+          <ul>
+            <li><b>Despacho → Saída:</b> despachado → a_caminho</li>
+            <li><b>Saída → Chegada:</b> a_caminho → no_local (indicador direto de deslocamento real)</li>
+            <li><b>Chegada → Controle:</b> no_local → em_controle (tempo até estabilizar)</li>
+            <li><b>Controle → Encerramento:</b> em_controle → terminado</li>
+            <li><b>Ligação → Inclusão:</b> data_hora_ligacao → chamada_data_hora_inclusao (processo interno)</li>
+          </ul>
+          Use os filtros de <b>natureza</b>, <b>unidade</b>, <b>recurso</b> e <b>viatura</b> para identificar gargalos e saturação.
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: OVERVIEW -->
+    <section class="page" id="overviewPage">
+      <section class="kpis" id="kpiGrid"></section>
+
+      <section class="grid">
+        <div class="card">
+          <div class="cardHeader">
+            <h4>Ocorrências por dia</h4>
+            <div class="hint">barras • volume por unidade</div>
+          </div>
+          <canvas id="chartLine"></canvas>
+        </div>
+
+        <div class="card">
+          <div class="cardHeader">
+            <h4>Distribuição por grupo</h4>
+            <div class="hint">rosca • natureza_grupo</div>
+          </div>
+          <canvas id="chartDonut"></canvas>
+        </div>
+      </section>
+
+      <section class="grid2">
+        <div class="card small">
+          <div class="cardHeader">
+            <h4>Top 10 naturezas</h4>
+            <div class="hint">barras • volume</div>
+          </div>
+          <canvas id="chartBar"></canvas>
+        </div>
+
+        <div class="card">
+          <div class="cardHeader">
+            <h4>Leitura operacional</h4>
+            <div class="hint">qualidade + alertas</div>
+          </div>
+          <div class="note" id="overviewInsights"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="cardHeader">
+          <h4>Detalhes (tabela)</h4>
+          <div class="hint">busca + paginação + export</div>
+        </div>
+
+        <div class="tableControls">
+          <div class="left">
+            <input id="tableSearch" type="text" placeholder="Buscar: natureza, unidade, viatura, recurso..." style="width:340px; max-width:100%;"/>
+            <select id="pageSize" style="width:140px;">
+              <option value="10">10 / página</option>
+              <option value="25" selected>25 / página</option>
+              <option value="50">50 / página</option>
+              <option value="100">100 / página</option>
+            </select>
+            <button class="btn ghost" id="btnExport">Exportar filtrado</button>
+          </div>
+          <div class="pager">
+            <button class="btn ghost" id="prevPage">◀</button>
+            <span class="muted" id="pageInfo">Página 1</span>
+            <button class="btn ghost" id="nextPage">▶</button>
+          </div>
+        </div>
+
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="cursor:pointer;user-select:none;" data-sort="dt_ligacao">Data/Hora <span class="sort-indicator">▼</span></th>
+                <th style="cursor:pointer;user-select:none;" data-sort="natureza_full">Natureza <span class="sort-indicator"></span></th>
+                <th style="cursor:pointer;user-select:none;" data-sort="unidade_servico">Unidade <span class="sort-indicator"></span></th>
+                <th style="cursor:pointer;user-select:none;" data-sort="recurso_prefixo_calc">Recurso <span class="sort-indicator"></span></th>
+                <th style="cursor:pointer;user-select:none;" data-sort="viatura_calc">Viatura <span class="sort-indicator"></span></th>
+                <th>Despachado</th>
+                <th>A caminho</th>
+                <th>No local</th>
+                <th>Em controle</th>
+                <th>Terminado</th>
+                <th style="cursor:pointer;user-select:none;" data-sort="d_desp_to_enroute_seg">Δ Desp→Saída <span class="sort-indicator"></span></th>
+                <th style="cursor:pointer;user-select:none;" data-sort="d_enroute_to_onscene_seg">Δ Saída→Chegada <span class="sort-indicator"></span></th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="note" id="tableNote"></div>
+      </section>
+    </section>
+
+    <!-- PAGE: TIMES -->
+    <section class="page" id="timesPage">
+      <section class="kpis" id="kpiTimes"></section>
+
+      <section class="grid2">
+        <div class="card">
+          <div class="cardHeader">
+            <h4>Despachado → A caminho</h4>
+            <div class="hint">barras • mediana por unidade</div>
+          </div>
+          <canvas id="chartDispatchToEnroute"></canvas>
+        </div>
+        <div class="card">
+          <div class="cardHeader">
+            <h4>A caminho → No local</h4>
+            <div class="hint">barras • mediana por unidade</div>
+          </div>
+          <canvas id="chartEnrouteToOnscene"></canvas>
+        </div>
+      </section>
+
+      <section class="grid2">
+        <div class="card">
+          <div class="cardHeader">
+            <h4>No local → Em controle</h4>
+            <div class="hint">barras • mediana por natureza</div>
+          </div>
+          <canvas id="chartOnsceneToControl"></canvas>
+        </div>
+        <div class="card">
+          <div class="cardHeader">
+            <h4>Em controle → Terminado</h4>
+            <div class="hint">barras • mediana por natureza</div>
+          </div>
+          <canvas id="chartControlToDone"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="cardHeader">
+          <h4>Qualidade de timestamps</h4>
+          <div class="hint">completude por status</div>
+        </div>
+        <div class="note" id="timesQuality"></div>
+      </section>
+    </section>
+
+    <!-- PAGE: NATURES -->
+    <section class="page" id="naturesPage">
+      <section class="kpis" id="kpiNatures"></section>
+
+      <section class="grid2">
+        <div class="card">
+          <div class="cardHeader">
+            <h4>Tendência por grupo</h4>
+            <div class="hint">linha • volume/dia</div>
+          </div>
+          <canvas id="chartGroupTrend"></canvas>
+        </div>
+        <div class="card small">
+          <div class="cardHeader">
+            <h4>Top 10 por volume</h4>
+            <div class="hint">barras • natureza</div>
+          </div>
+          <canvas id="chartNatureTop"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="cardHeader">
+          <h4>Naturezas (tabela)</h4>
+          <div class="hint">volume • % • medianas</div>
+        </div>
+        <div class="tableWrap">
+          <table style="min-width:980px;">
+            <thead>
+              <tr>
+                <th>Natureza</th>
+                <th>Grupo</th>
+                <th>Volume</th>
+                <th>%</th>
+                <th>Mediana (Saída→Chegada)</th>
+                <th>P90 (Saída→Chegada)</th>
+                <th>Mediana (No local→Controle)</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyNatures"></tbody>
+          </table>
+        </div>
+        <div class="note" id="noteNatures"></div>
+      </section>
+    </section>
+
+    <!-- PAGE: RESOURCES -->
+    <section class="page" id="resourcesPage">
+      <section class="kpis" id="kpiResources"></section>
+
+      <section class="grid2">
+        <div class="card small">
+          <div class="cardHeader">
+            <h4>Top unidades</h4>
+            <div class="hint">barras • volume</div>
+          </div>
+          <canvas id="chartUnitTop"></canvas>
+        </div>
+        <div class="card small">
+          <div class="cardHeader">
+            <h4>Top viaturas</h4>
+            <div class="hint">barras • volume</div>
+          </div>
+          <canvas id="chartVehicleTop"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="cardHeader">
+          <h4>Unidades (tabela)</h4>
+          <div class="hint">volume • eficiência</div>
+        </div>
+        <div class="tableWrap">
+          <table style="min-width:980px;">
+            <thead>
+              <tr>
+                <th>Unidade</th>
+                <th>Volume</th>
+                <th>% Despachadas</th>
+                <th>Mediana (Desp→Saída)</th>
+                <th>Mediana (Saída→Chegada)</th>
+                <th>P90 (Saída→Chegada)</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyUnits"></tbody>
+          </table>
+        </div>
+        <div class="note" id="noteUnits"></div>
+      </section>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* =========================================================
+   CBMMG Dashboard — HTML/CSS/JS puro
+   - Modular: Parser, Normalização, Filtros, Agregações, Charts, Render
+   - Métricas principais: deltas entre status timestamps
+========================================================= */
+
+/* -------------------------
+   1) Helpers: texto, data, tempo
+--------------------------*/
+const U = (() => {
+  const normalizeText = (s) => {
+    if (s == null) return "";
+    return String(s)
+      .replace(/\uFFFD/g, "o")
+      .replace(/n�o/gi, "não")
+      .trim();
+  };
+
+  const parseBooleanPt = (v) => {
+    const s = normalizeText(v).toLowerCase();
+    if (!s) return null;
+    if (["sim","true","1","yes"].includes(s)) return true;
+    if (["não","nao","false","0","no"].includes(s)) return false;
+    return null;
+  };
+
+  // "DD/MM/YYYY HH:mm:ss" | "YYYY-MM-DD HH:mm:ss" | "YYYY-MM-DDTHH:mm"
+  const parseDateFlexible = (v) => {
+    const s = normalizeText(v);
+    if (!s) return null;
+
+    if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+      const d = new Date(s);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}$/.test(s)) {
+      const [datePart, timePart] = s.split(/\s+/);
+      const [Y,M,D] = datePart.split("-").map(Number);
+      const [h,m,sec] = timePart.split(":").map(Number);
+      const d = new Date(Y, M-1, D, h, m, sec);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    if (/^\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2}$/.test(s)) {
+      const [datePart, timePart] = s.split(/\s+/);
+      const [D,M,Y] = datePart.split("/").map(Number);
+      const [h,m,sec] = timePart.split(":").map(Number);
+      const d = new Date(Y, M-1, D, h, m, sec);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      const [Y,M,D] = s.split("-").map(Number);
+      const d = new Date(Y, M-1, D, 0,0,0);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+      const [D,M,Y] = s.split("/").map(Number);
+      const d = new Date(Y, M-1, D, 0,0,0);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const parseDurationHMS = (v) => {
+    const s = normalizeText(v);
+    if (!s) return null;
+    const m = s.match(/^(\d{2}):(\d{2}):(\d{2})$/);
+    if (!m) return null;
+    const hh = +m[1], mm = +m[2], ss = +m[3];
+    return hh*3600 + mm*60 + ss;
+  };
+
+  const formatSecondsToHMS = (sec) => {
+    if (sec == null || !isFinite(sec)) return "—";
+    const s = Math.max(0, Math.round(sec));
+    const hh = Math.floor(s/3600);
+    const mm = Math.floor((s%3600)/60);
+    const ss = s%60;
+    const pad = (n)=> String(n).padStart(2,"0");
+    return hh > 0 ? `${pad(hh)}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`;
+  };
+
+  const formatDate = (date) => {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) return "—";
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    const h = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    const s = String(date.getSeconds()).padStart(2, '0');
+    return `${d}/${m}/${y} ${h}:${min}:${s}`;
+  };
+
+  const toISODate = (d) => {
+    const pad = (n)=> String(n).padStart(2,"0");
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  };
+
+  const toMonth = (d) => `${toISODate(new Date(d.getFullYear(), d.getMonth(), 1)).slice(0,7)}`;
+
+  const dayShort = (d) => ["dom","seg","ter","qua","qui","sex","sáb"][d.getDay()];
+
+  const toDateTimeLocal = (d) => {
+    const pad = (n)=> String(n).padStart(2,"0");
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (m)=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+
+  return {
+    normalizeText, parseBooleanPt, parseDateFlexible,
+    parseDurationHMS, formatSecondsToHMS, formatDate,
+    toISODate, toMonth, dayShort, toDateTimeLocal,
+    escapeHtml
+  };
+})();
+
+/* -------------------------
+   2) CSV Parser (robusto)
+--------------------------*/
+const CSV = (() => {
+  function parse(text){
+    const rows = [];
+    let i=0, field="", row=[], inQuotes=false;
+
+    while (i < text.length){
+      const c = text[i];
+
+      if (c === '"'){
+        if (inQuotes && text[i+1] === '"'){ field += '"'; i += 2; continue; }
+        inQuotes = !inQuotes; i++; continue;
+      }
+
+      if (!inQuotes && (c === "," || c === "\n" || c === "\r")){
+        row.push(field); field="";
+        if (c === "\n" || c === "\r"){
+          if (c === "\r" && text[i+1] === "\n") i++;
+          if (row.some(x => U.normalizeText(x) !== "")) rows.push(row);
+          row=[];
+        }
+        i++; continue;
+      }
+
+      field += c; i++;
+    }
+    if (field.length || row.length){
+      row.push(field);
+      if (row.some(x => U.normalizeText(x) !== "")) rows.push(row);
+    }
+
+    const header = (rows[0] || []).map(h => U.normalizeText(h));
+    const data = rows.slice(1).map(r => {
+      const obj = {};
+      header.forEach((h, idx)=> obj[h] = (idx < r.length ? r[idx] : ""));
+      return obj;
+    });
+    return { header, data };
+  }
+  return { parse };
+})();
+
+/* -------------------------
+   3) Dom refs
+--------------------------*/
+const el = {
+  // nav
+  nav: document.getElementById("nav"),
+  pages: {
+    filtersPage: document.getElementById("filtersPage"),
+    overviewPage: document.getElementById("overviewPage"),
+    timesPage: document.getElementById("timesPage"),
+    naturesPage: document.getElementById("naturesPage"),
+    resourcesPage: document.getElementById("resourcesPage"),
+  },
+  pageTitle: document.getElementById("pageTitle"),
+  pageSubtitle: document.getElementById("pageSubtitle"),
+
+  // load
+  fileInput: document.getElementById("fileInput"),
+  csvPaste: document.getElementById("csvPaste"),
+  btnLoad: document.getElementById("btnLoad"),
+  btnClearData: document.getElementById("btnClearData"),
+
+  // filters
+  dtStart: document.getElementById("dtStart"),
+  dtEnd: document.getElementById("dtEnd"),
+  onlyCentral: document.getElementById("onlyCentral"),
+  onlyDespachado: document.getElementById("onlyDespachado"),
+
+  natureSearch: document.getElementById("natureSearch"),
+  natureSelect: document.getElementById("natureSelect"),
+  unitSearch: document.getElementById("unitSearch"),
+  unitSelect: document.getElementById("unitSelect"),
+  resSearch: document.getElementById("resSearch"),
+  resSelect: document.getElementById("resSelect"),
+  vehSearch: document.getElementById("vehSearch"),
+  vehSelect: document.getElementById("vehSelect"),
+
+  btnApply: document.getElementById("btnApply"),
+  btnReset: document.getElementById("btnReset"),
+  chipRow: document.getElementById("chipRow"),
+  qualityBox: document.getElementById("qualityBox"),
+
+  // status
+  statusBox: document.getElementById("statusBox"),
+
+  // overview
+  kpiGrid: document.getElementById("kpiGrid"),
+  chartLine: document.getElementById("chartLine"),
+  chartBar: document.getElementById("chartBar"),
+  chartDonut: document.getElementById("chartDonut"),
+  overviewInsights: document.getElementById("overviewInsights"),
+
+  // overview table
+  tableSearch: document.getElementById("tableSearch"),
+  pageSize: document.getElementById("pageSize"),
+  btnExport: document.getElementById("btnExport"),
+  prevPage: document.getElementById("prevPage"),
+  nextPage: document.getElementById("nextPage"),
+  pageInfo: document.getElementById("pageInfo"),
+  tbody: document.getElementById("tbody"),
+  tableNote: document.getElementById("tableNote"),
+
+  // times
+  kpiTimes: document.getElementById("kpiTimes"),
+  chartDispatchToEnroute: document.getElementById("chartDispatchToEnroute"),
+  chartEnrouteToOnscene: document.getElementById("chartEnrouteToOnscene"),
+  chartOnsceneToControl: document.getElementById("chartOnsceneToControl"),
+  chartControlToDone: document.getElementById("chartControlToDone"),
+  timesQuality: document.getElementById("timesQuality"),
+
+  // natures
+  kpiNatures: document.getElementById("kpiNatures"),
+  chartGroupTrend: document.getElementById("chartGroupTrend"),
+  chartNatureTop: document.getElementById("chartNatureTop"),
+  tbodyNatures: document.getElementById("tbodyNatures"),
+  noteNatures: document.getElementById("noteNatures"),
+
+  // resources
+  kpiResources: document.getElementById("kpiResources"),
+  chartUnitTop: document.getElementById("chartUnitTop"),
+  chartVehicleTop: document.getElementById("chartVehicleTop"),
+  tbodyUnits: document.getElementById("tbodyUnits"),
+  noteUnits: document.getElementById("noteUnits"),
+};
+
+/* -------------------------
+   4) State
+--------------------------*/
+const State = {
+  RAW: [],
+  META: { minDt:null, maxDt:null, lists:{} },
+  FILTERED: [],
+  PREV: [], // período anterior equivalente (para delta)
+
+  table: { page:1, pageSize:25, search:"", sortBy:"dt_ligacao", sortDesc:true }
+};
+
+/* -------------------------
+   5) Builder: transforma linha CSV em registro normalizado
+--------------------------*/
+const Builder = (() => {
+  const STATUS_FIELDS = [
+    "despachado","a_caminho","no_local","em_direcao","em_controle","em_retorno","suspenso","no_local_intermediario","terminado"
+  ];
+
+  function build(raw){
+    const dtLig = U.parseDateFlexible(raw["data_hora_ligacao"]);
+    const dtInc = U.parseDateFlexible(raw["chamada_data_hora_inclusao"]);
+
+    const naturezaCod = U.normalizeText(raw["natureza_codigo_final"]);
+    const naturezaDesc = U.normalizeText(raw["natureza_descricao_final"]) || "—";
+    const naturezaFull = (naturezaCod ? `${naturezaCod} - ${naturezaDesc}` : naturezaDesc);
+
+    const naturezaGrupo = U.normalizeText(raw["natureza_grupo"]) || (naturezaCod ? naturezaCod.slice(0,1) : "—");
+
+    const unidade = U.normalizeText(raw["unidade_servico_nome"]) || "—";
+    const recurso = U.normalizeText(raw["recurso_prefixo"]) || "—";
+    const viatura = U.normalizeText(raw["viatura_numero_placa"]) || "—";
+
+    const viaCentral = U.parseBooleanPt(raw["chamada_via_central_telefonica"]);
+    const ligReg = U.parseBooleanPt(raw["ligacao_registrada"]);
+
+    // tempos HH:MM:SS do csv (se existirem)
+    const tCri = U.parseDurationHMS(raw["t_criacao_chamada_tratado"]);
+    const tEmp = U.parseDurationHMS(raw["t_empenhar_recurso_tratado"]);
+    const tDes = U.parseDurationHMS(raw["t_deslocamento_tratado"]);
+    const tNoL = U.parseDurationHMS(raw["t_ligacao_no_loca_tratado"]);
+
+    // status timestamps (strings no csv)
+    const statusDt = {};
+    for (const f of STATUS_FIELDS){
+      statusDt[f] = U.parseDateFlexible(raw[f]);
+    }
+
+    // deltas entre status (segundos)
+    const delta = (a,b) => {
+      if (!a || !b) return null;
+      const s = (b.getTime() - a.getTime())/1000;
+      return (isFinite(s) && s >= 0) ? s : null;
+    };
+
+    const dDespToEnroute = delta(statusDt.despachado, statusDt.a_caminho);
+    const dEnrouteToOnscene = delta(statusDt.a_caminho, statusDt.no_local);
+    const dOnsceneToControl = delta(statusDt.no_local, statusDt.em_controle);
+    const dControlToDone = delta(statusDt.em_controle, statusDt.terminado);
+
+    const dLigToIncl = delta(dtLig, dtInc);
+
+    const flagDesp = !!statusDt.despachado || !!U.normalizeText(raw["despachado"]);
+    const flagDone = !!statusDt.terminado;
+    const flagSusp = !!statusDt.suspenso;
+
+    const tempoRespostaTotal = (tEmp != null && tDes != null) ? (tEmp + tDes) : null;
+
+    return {
+      ...raw,
+      dt_ligacao: dtLig,
+      dt_inclusao: dtInc,
+
+      data: dtLig ? U.toISODate(dtLig) : null,
+      hora: dtLig ? dtLig.getHours() : null,
+      diaSemana: dtLig ? U.dayShort(dtLig) : null,
+      mesAno: dtLig ? U.toMonth(dtLig) : null,
+
+      natureza_codigo: naturezaCod,
+      natureza_desc: naturezaDesc,
+      natureza_full: naturezaFull,
+      natureza_grupo_calc: naturezaGrupo,
+
+      unidade_servico: unidade,
+      recurso_prefixo_calc: recurso,
+      viatura_calc: viatura,
+
+      via_central_bool: viaCentral,
+      ligacao_reg_bool: ligReg,
+
+      status_dt: statusDt,
+
+      t_criacao_seg: tCri,
+      t_empenho_seg: tEmp,
+      t_desloc_seg: tDes,
+      t_lig_no_local_seg: tNoL,
+      tempo_resposta_total_seg: tempoRespostaTotal,
+
+      d_lig_to_incl_seg: dLigToIncl,
+      d_desp_to_enroute_seg: dDespToEnroute,
+      d_enroute_to_onscene_seg: dEnrouteToOnscene,
+      d_onscene_to_control_seg: dOnsceneToControl,
+      d_control_to_done_seg: dControlToDone,
+
+      flag_despachado: flagDesp,
+      flag_terminado: flagDone,
+      flag_suspenso: flagSusp,
+    };
+  }
+
+  return { build, STATUS_FIELDS };
+})();
+
+/* -------------------------
+   6) Agregações: stats, percentis, groupbys
+--------------------------*/
+const Agg = (() => {
+  const mean = (arr) => {
+    const xs = arr.filter(x => x != null && isFinite(x) && x > 0);
+    if (!xs.length) return null;
+    return xs.reduce((a,b)=>a+b,0)/xs.length;
+  };
+
+  const percentile = (arr, p) => {
+    const xs = arr.filter(x => x != null && isFinite(x) && x > 0).sort((a,b)=>a-b);
+    if (!xs.length) return null;
+    const idx = (xs.length - 1) * p;
+    const lo = Math.floor(idx), hi = Math.ceil(idx);
+    if (lo === hi) return xs[lo];
+    return xs[lo] + (xs[hi]-xs[lo]) * (idx-lo);
+  };
+
+  const median = (arr) => percentile(arr, 0.50);
+  const p90 = (arr) => percentile(arr, 0.90);
+
+  const countBy = (rows, keyFn) => {
+    const m = new Map();
+    for (const r of rows){
+      const k = keyFn(r);
+      if (!k || k === "—") continue;
+      m.set(k, (m.get(k)||0)+1);
+    }
+    return Array.from(m.entries()).map(([key,count])=>({key,count})).sort((a,b)=>b.count-a.count);
+  };
+
+  const groupByDay = (rows) => {
+    const m = new Map();
+    for (const r of rows){
+      if (!r.data) continue;
+      m.set(r.data, (m.get(r.data)||0)+1);
+    }
+    const keys = Array.from(m.keys()).sort();
+    return keys.map(k => ({ x:k, y:m.get(k)}));
+  };
+
+  const groupByDayAndUnit = (rows) => {
+    // agrupa por dia e depois por unidade, retornando top unidades
+    const byDay = new Map(); // day -> map(unit->count)
+    for (const r of rows){
+      if (!r.data) continue;
+      const unit = r.unidade_servico_nome || "Sem unidade";
+      if (!byDay.has(r.data)) byDay.set(r.data, new Map());
+      const mm = byDay.get(r.data);
+      mm.set(unit, (mm.get(unit)||0)+1);
+    }
+    const days = Array.from(byDay.keys()).sort();
+    
+    // calcular top unidades no total
+    const totalByUnit = new Map();
+    for (const day of days){
+      for (const [unit,c] of byDay.get(day).entries()){
+        totalByUnit.set(unit, (totalByUnit.get(unit)||0)+c);
+      }
+    }
+    const topUnits = Array.from(totalByUnit.entries())
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,10)
+      .map(x=>x[0]);
+
+    const series = topUnits.map(unit => ({
+      name: unit,
+      points: days.map(d => ({ x:d, y: (byDay.get(d).get(unit)||0) }))
+    }));
+    return { days, series };
+  };
+
+  const groupTrendByGroup = (rows) => {
+    // devolve serie por dia, somando top grupos
+    const byDay = new Map(); // day -> map(group->count)
+    for (const r of rows){
+      if (!r.data) continue;
+      const g = r.natureza_grupo_calc || "—";
+      if (!byDay.has(r.data)) byDay.set(r.data, new Map());
+      const mm = byDay.get(r.data);
+      mm.set(g, (mm.get(g)||0)+1);
+    }
+    const days = Array.from(byDay.keys()).sort();
+    // top 4 grupos no total
+    const totalByG = new Map();
+    for (const day of days){
+      for (const [g,c] of byDay.get(day).entries()){
+        totalByG.set(g, (totalByG.get(g)||0)+c);
+      }
+    }
+    const top = Array.from(totalByG.entries()).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
+
+    const series = top.map(g => ({
+      name: g,
+      points: days.map(d => ({ x:d, y: (byDay.get(d).get(g)||0) }))
+    }));
+    return { days, series };
+  };
+
+  const kpisOverview = (rows) => {
+    const total = rows.length;
+    const desp = rows.filter(r => r.flag_despachado).length;
+    const pctDesp = total ? (desp/total)*100 : 0;
+
+    const viaCentral = rows.filter(r => r.via_central_bool === true).length;
+    const pctCentral = total ? (viaCentral/total)*100 : 0;
+
+    const tEmp = rows.map(r => r.t_empenho_seg);
+    const tDes = rows.map(r => r.t_desloc_seg);
+    const respTotal = rows.map(r => r.tempo_resposta_total_seg);
+
+    const d1 = rows.map(r => r.d_desp_to_enroute_seg);
+    const d2 = rows.map(r => r.d_enroute_to_onscene_seg);
+
+    const missingStatus = {
+      despachado: rows.filter(r => !r.status_dt.despachado).length,
+      a_caminho: rows.filter(r => !r.status_dt.a_caminho).length,
+      no_local: rows.filter(r => !r.status_dt.no_local).length,
+      em_controle: rows.filter(r => !r.status_dt.em_controle).length,
+      terminado: rows.filter(r => !r.status_dt.terminado).length,
+    };
+
+    const pctMissingKey = total ? (missingStatus.no_local/total)*100 : 0;
+
+    return {
+      total, desp, pctDesp,
+      viaCentral, pctCentral,
+      avgEmp: mean(tEmp),
+      avgDes: mean(tDes),
+      medResp: median(respTotal),
+      p90Resp: p90(respTotal),
+      medDespToEnroute: median(d1),
+      p90DespToEnroute: p90(d1),
+      medEnrouteToOnscene: median(d2),
+      p90EnrouteToOnscene: p90(d2),
+      missingStatus,
+      pctMissingKey
+    };
+  };
+
+  const periodDelta = (curValue, prevValue) => {
+    if (curValue == null || prevValue == null) return null;
+    if (prevValue === 0) return null;
+    return ((curValue - prevValue)/prevValue)*100;
+  };
+
+  return {
+    mean, median, p90, percentile,
+    countBy, groupByDay, groupByDayAndUnit, groupTrendByGroup,
+    kpisOverview, periodDelta
+  };
+})();
+
+/* -------------------------
+   7) Charts (Canvas) — linha, barras, rosca, multilin
+--------------------------*/
+const Charts = (() => {
+  const getFont = () => getComputedStyle(document.body).fontFamily;
+
+  function clear(canvas){
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+  }
+
+  function sizeCanvas(canvas){
+    // ajusta resolução para ficar nítido
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(600, Math.floor(rect.width * dpr));
+    canvas.height = Math.max(260, Math.floor(rect.height * dpr));
+  }
+
+  function empty(ctx, w,h, msg){
+    ctx.fillStyle = "rgba(232,238,252,.80)";
+    ctx.font = `600 ${Math.floor(h*0.06)}px ${getFont()}`;
+    ctx.fillText(msg, 24, 44);
+    ctx.fillStyle = "rgba(169,183,223,.75)";
+    ctx.font = `400 ${Math.floor(h*0.045)}px ${getFont()}`;
+    ctx.fillText("Ajuste filtros (período/natureza/unidade) para visualizar.", 24, 72);
+  }
+
+  function axis(ctx, w,h, pad){
+    ctx.strokeStyle = "rgba(255,255,255,.12)";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad, h-pad); ctx.lineTo(w-pad, h-pad); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad, pad); ctx.lineTo(pad, h-pad); ctx.stroke();
+  }
+
+  function line(canvas, series){
+    sizeCanvas(canvas);
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    const pad = Math.floor(Math.min(w,h)*0.12);
+    axis(ctx,w,h,pad);
+
+    if (!series.length){ empty(ctx,w,h,"Sem dados no período"); return; }
+
+    const ys = series.map(p=>p.y);
+    const maxY = Math.max(1, ...ys);
+
+    // grid
+    ctx.strokeStyle = "rgba(255,255,255,.06)";
+    for (let i=1;i<=4;i++){
+      const y = pad + (h-2*pad)* (i/4);
+      ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke();
+    }
+
+    const xStep = (w-2*pad)/Math.max(1, series.length-1);
+
+    // line
+    ctx.lineWidth = 2.6;
+    ctx.strokeStyle = "rgba(83,177,253,.95)";
+    ctx.beginPath();
+    series.forEach((p,i)=>{
+      const x = pad + i*xStep;
+      const y = (h-pad) - (p.y/maxY)*(h-2*pad);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+
+    // points
+    ctx.fillStyle = "rgba(255,122,24,.95)";
+    series.forEach((p,i)=>{
+      const x = pad + i*xStep;
+      const y = (h-pad) - (p.y/maxY)*(h-2*pad);
+      ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fill();
+    });
+
+    // labels
+    ctx.fillStyle = "rgba(232,238,252,.75)";
+    ctx.font = `400 ${Math.floor(h*0.05)}px ${getFont()}`;
+    ctx.fillText("0", pad-16, h-pad+18);
+    ctx.fillText(String(maxY), 10, pad+10);
+
+    const showEvery = Math.ceil(series.length/6);
+    for (let i=0;i<series.length;i+=showEvery){
+      const x = pad + i*xStep;
+      const label = series[i].x.slice(5); // MM-DD
+      ctx.fillText(label, x-18, h-pad+32);
+    }
+  }
+
+  function multiLine(canvas, multi){
+    // multi: [{name, points:[{x,y}]}]
+    sizeCanvas(canvas);
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    const pad = Math.floor(Math.min(w,h)*0.12);
+    axis(ctx,w,h,pad);
+
+    if (!multi.length || !multi[0].points.length){ empty(ctx,w,h,"Sem dados no período"); return; }
+
+    const n = multi[0].points.length;
+    const maxY = Math.max(1, ...multi.flatMap(s => s.points.map(p=>p.y)));
+
+    ctx.strokeStyle = "rgba(255,255,255,.06)";
+    for (let i=1;i<=4;i++){
+      const y = pad + (h-2*pad)* (i/4);
+      ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke();
+    }
+
+    const xStep = (w-2*pad)/Math.max(1, n-1);
+    const colors = [
+      "rgba(83,177,253,.95)",
+      "rgba(255,122,24,.95)",
+      "rgba(34,197,94,.92)",
+      "rgba(168,85,247,.92)"
+    ];
+
+    multi.forEach((s, idx)=>{
+      ctx.lineWidth = 2.3;
+      ctx.strokeStyle = colors[idx % colors.length];
+      ctx.beginPath();
+      s.points.forEach((p,i)=>{
+        const x = pad + i*xStep;
+        const y = (h-pad) - (p.y/maxY)*(h-2*pad);
+        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+    });
+
+    // legend
+    const lx = w - pad + 8;
+    const ly = pad;
+    ctx.font = `400 ${Math.floor(h*0.045)}px ${getFont()}`;
+    multi.slice(0,4).forEach((s, idx)=>{
+      const y = ly + idx*18;
+      ctx.fillStyle = colors[idx % colors.length];
+      ctx.fillRect(lx, y-10, 10, 10);
+      ctx.fillStyle = "rgba(232,238,252,.78)";
+      ctx.fillText(s.name, lx+14, y);
+    });
+
+    // x labels
+    ctx.fillStyle = "rgba(232,238,252,.75)";
+    const showEvery = Math.ceil(n/6);
+    for (let i=0;i<n;i+=showEvery){
+      const x = pad + i*xStep;
+      const label = multi[0].points[i].x.slice(5);
+      ctx.fillText(label, x-18, h-pad+32);
+    }
+  }
+
+  function barH(canvas, items, valueLabelFn=(v)=>String(v)){
+    sizeCanvas(canvas);
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    if (!items.length){ empty(ctx,w,h,"Sem dados no período"); return; }
+
+    const maxV = Math.max(1, ...items.map(i=>i.value));
+    const padY = Math.floor(h*0.10);
+    const barH = Math.max(18, Math.floor((h - 2*padY) / items.length) - 8);
+    const gap = 10;
+
+    ctx.font = `400 ${Math.floor(h*0.045)}px ${getFont()}`;
+
+    items.forEach((it, idx)=>{
+      const y = padY + idx*(barH+gap);
+      const left = Math.floor(w*0.34);
+      const right = w - 18;
+      const fullW = right - left;
+      const bw = Math.round(fullW * (it.value/maxV));
+
+      // label
+      ctx.fillStyle = "rgba(232,238,252,.84)";
+      const name = it.label.length > 40 ? it.label.slice(0,40)+"…" : it.label;
+      ctx.fillText(name, 18, y + barH - 4);
+
+      // bg
+      ctx.fillStyle = "rgba(255,255,255,.06)";
+      ctx.fillRect(left, y, fullW, barH);
+
+      // bar
+      const grad = ctx.createLinearGradient(left,0,left+bw,0);
+      grad.addColorStop(0, "rgba(255,122,24,.95)");
+      grad.addColorStop(1, "rgba(83,177,253,.95)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(left, y, bw, barH);
+
+      // value
+      ctx.fillStyle = "rgba(232,238,252,.92)";
+      ctx.fillText(valueLabelFn(it.value), left + bw + 10, y + barH - 4);
+    });
+  }
+
+  function donut(canvas, items){
+    sizeCanvas(canvas);
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    if (!items.length){ empty(ctx,w,h,"Sem dados no período"); return; }
+
+    const total = items.reduce((a,b)=>a+b.value,0) || 1;
+
+    const cx = Math.floor(w*0.34), cy = Math.floor(h*0.54);
+    const r = Math.min(w,h)*0.30;
+    const rInner = r*0.62;
+
+    let start = -Math.PI/2;
+
+    const colors = [
+      "rgba(83,177,253,.95)",
+      "rgba(255,122,24,.95)",
+      "rgba(34,197,94,.92)",
+      "rgba(245,158,11,.92)",
+      "rgba(239,68,68,.92)",
+      "rgba(168,85,247,.92)",
+      "rgba(20,184,166,.92)"
+    ];
+
+    items.forEach((it, idx)=>{
+      const ang = (it.value/total)*Math.PI*2;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.fillStyle = colors[idx%colors.length];
+      ctx.arc(cx,cy,r,start,start+ang);
+      ctx.closePath();
+      ctx.fill();
+      start += ang;
+    });
+
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(15,26,48,.95)";
+    ctx.arc(cx,cy,rInner,0,Math.PI*2);
+    ctx.fill();
+
+    // center
+    ctx.fillStyle = "rgba(232,238,252,.92)";
+    ctx.font = `800 ${Math.floor(h*0.065)}px ${getFont()}`;
+    ctx.fillText("Total", cx-26, cy-6);
+    ctx.font = `900 ${Math.floor(h*0.080)}px ${getFont()}`;
+    ctx.fillText(String(total.toLocaleString("pt-BR")), cx-30, cy+26);
+
+    // legend
+    const lx = Math.floor(w*0.60), ly = Math.floor(h*0.22);
+    ctx.font = `400 ${Math.floor(h*0.045)}px ${getFont()}`;
+    items.slice(0,7).forEach((it, idx)=>{
+      const y = ly + idx*22;
+      ctx.fillStyle = colors[idx%colors.length];
+      ctx.fillRect(lx, y-10, 12, 12);
+      ctx.fillStyle = "rgba(232,238,252,.86)";
+      const pct = ((it.value/total)*100).toFixed(1)+"%";
+      const name = it.label.length>22 ? it.label.slice(0,22)+"…" : it.label;
+      ctx.fillText(`${name} • ${pct}`, lx+18, y);
+    });
+  }
+
+  function barGrouped(canvas, dataByDayUnit){
+    // dataByDayUnit: {days: [...], series: [{name, points:[{x,y}]}]}
+    sizeCanvas(canvas);
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    const pad = Math.floor(Math.min(w,h)*0.12);
+    axis(ctx,w,h,pad);
+
+    if (!dataByDayUnit.series.length){ 
+      empty(ctx,w,h,"Sem dados no período"); 
+      return; 
+    }
+
+    const days = dataByDayUnit.days;
+    const series = dataByDayUnit.series;
+    
+    // Zoom state
+    if (!canvas._zoomLevel) canvas._zoomLevel = 1.0;
+    if (!canvas._scrollOffset) canvas._scrollOffset = 0;
+    
+    // encontrar maxY
+    let maxY = 1;
+    for (const s of series){
+      for (const p of s.points){
+        if (p.y > maxY) maxY = p.y;
+      }
+    }
+
+    // grid horizontal
+    ctx.strokeStyle = "rgba(255,255,255,.06)";
+    for (let i=1;i<=4;i++){
+      const y = pad + (h-2*pad)* (i/4);
+      ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke();
+    }
+
+    const colors = [
+      "rgba(83,177,253,.95)",
+      "rgba(255,122,24,.95)",
+      "rgba(34,197,94,.92)",
+      "rgba(245,158,11,.92)",
+      "rgba(239,68,68,.92)",
+      "rgba(168,85,247,.92)",
+      "rgba(20,184,166,.92)",
+      "rgba(236,72,153,.92)",
+      "rgba(147,51,234,.92)",
+      "rgba(14,165,233,.92)"
+    ];
+
+    const numDays = days.length;
+    const numSeries = series.length;
+    const baseGroupWidth = ((w - 2*pad) / numDays) * canvas._zoomLevel;
+    const groupWidth = Math.max(40, baseGroupWidth); // largura mínima por grupo
+    const barWidth = Math.max(6, (groupWidth * 0.85) / numSeries); // largura mínima por barra
+    const groupGap = groupWidth * 0.15;
+
+    // área de desenho com scroll
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad, pad, w-2*pad, h-2*pad);
+    ctx.clip();
+
+    // desenhar barras com offset de scroll
+    const bars = []; // para detecção de hover
+    for (let d=0; d<numDays; d++){
+      const groupX = pad + d*groupWidth - canvas._scrollOffset;
+      
+      // pular se estiver fora da área visível
+      if (groupX + groupWidth < pad || groupX > w - pad) continue;
+      
+      for (let s=0; s<numSeries; s++){
+        const point = series[s].points[d];
+        const barHeight = (point.y/maxY) * (h - 2*pad);
+        const x = groupX + groupGap/2 + s*barWidth;
+        const y = (h - pad) - barHeight;
+        
+        ctx.fillStyle = colors[s % colors.length];
+        ctx.fillRect(x, y, barWidth, barHeight);
+        
+        // guardar informação da barra para hover
+        bars.push({
+          x: x,
+          y: y,
+          width: barWidth,
+          height: barHeight,
+          value: point.y,
+          day: days[d],
+          unit: series[s].name,
+          color: colors[s % colors.length]
+        });
+      }
+    }
+    
+    ctx.restore();
+
+    // Tooltip (se hover ativo)
+    if (canvas._hoverBar) {
+      const bar = canvas._hoverBar;
+      const tooltipW = 200;
+      const tooltipH = 70;
+      let tx = bar.x + bar.width + 10;
+      let ty = bar.y - 10;
+      
+      // ajustar posição se sair da tela
+      if (tx + tooltipW > w - 10) tx = bar.x - tooltipW - 10;
+      if (ty < 10) ty = 10;
+      if (ty + tooltipH > h - 10) ty = h - tooltipH - 10;
+      
+      // fundo do tooltip
+      ctx.fillStyle = "rgba(11,18,32,.95)";
+      ctx.strokeStyle = "rgba(255,255,255,.20)";
+      ctx.lineWidth = 1;
+      ctx.fillRect(tx, ty, tooltipW, tooltipH);
+      ctx.strokeRect(tx, ty, tooltipW, tooltipH);
+      
+      // texto do tooltip
+      ctx.fillStyle = "rgba(232,238,252,.95)";
+      ctx.font = `600 ${Math.floor(h*0.042)}px ${getFont()}`;
+      ctx.fillText(bar.unit, tx+10, ty+20);
+      ctx.font = `400 ${Math.floor(h*0.038)}px ${getFont()}`;
+      ctx.fillStyle = "rgba(169,183,223,.95)";
+      ctx.fillText(`Data: ${bar.day}`, tx+10, ty+40);
+      ctx.fillStyle = bar.color;
+      ctx.font = `700 ${Math.floor(h*0.048)}px ${getFont()}`;
+      ctx.fillText(`${bar.value} ocorrências`, tx+10, ty+62);
+    }
+
+    // labels eixo Y
+    ctx.fillStyle = "rgba(232,238,252,.75)";
+    ctx.font = `400 ${Math.floor(h*0.05)}px ${getFont()}`;
+    ctx.fillText("0", pad-16, h-pad+18);
+    ctx.fillText(String(maxY), 10, pad+10);
+
+    // labels eixo X (dias) - ajustar com scroll
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad, h-pad, w-2*pad, 40);
+    ctx.clip();
+    
+    const showEvery = Math.max(1, Math.ceil(numDays/10));
+    for (let i=0; i<numDays; i+=showEvery){
+      const x = pad + i*groupWidth + groupWidth/2 - canvas._scrollOffset;
+      if (x >= pad && x <= w - pad){
+        const label = days[i].slice(5); // MM-DD
+        ctx.fillText(label, x-18, h-pad+32);
+      }
+    }
+    ctx.restore();
+
+    // legenda
+    const legendX = pad + 10;
+    const legendY = pad + 10;
+    ctx.font = `400 ${Math.floor(h*0.044)}px ${getFont()}`;
+    series.forEach((s, idx)=>{
+      const y = legendY + idx*18;
+      ctx.fillStyle = colors[idx % colors.length];
+      ctx.fillRect(legendX, y-10, 12, 12);
+      ctx.fillStyle = "rgba(232,238,252,.86)";
+      const name = s.name.length > 18 ? s.name.slice(0,18)+"…" : s.name;
+      ctx.fillText(name, legendX+16, y);
+    });
+    
+    // Instrução de zoom
+    ctx.fillStyle = "rgba(169,183,223,.75)";
+    ctx.font = `400 ${Math.floor(h*0.035)}px ${getFont()}`;
+    ctx.fillText("🔍 Scroll para zoom • Arraste para mover", w - 280, h - 10);
+    
+    // Guardar dados para interação
+    canvas._barsData = bars;
+    canvas._chartData = dataByDayUnit;
+    
+    // Adicionar event listeners se ainda não existem
+    if (!canvas._listenersAdded) {
+      canvas._listenersAdded = true;
+      
+      // Mouse wheel para zoom
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        canvas._zoomLevel = Math.max(0.5, Math.min(5, canvas._zoomLevel * delta));
+        barGrouped(canvas, canvas._chartData);
+      });
+      
+      // Mouse move para tooltip
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const mx = (e.clientX - rect.left) * dpr;
+        const my = (e.clientY - rect.top) * dpr;
+        
+        let found = null;
+        for (const bar of canvas._barsData || []) {
+          if (mx >= bar.x && mx <= bar.x + bar.width &&
+              my >= bar.y && my <= bar.y + bar.height) {
+            found = bar;
+            break;
+          }
+        }
+        
+        if (found !== canvas._hoverBar) {
+          canvas._hoverBar = found;
+          canvas.style.cursor = found ? 'pointer' : 'default';
+          barGrouped(canvas, canvas._chartData);
+        }
+      });
+      
+      // Mouse leave para limpar tooltip
+      canvas.addEventListener('mouseleave', () => {
+        if (canvas._hoverBar) {
+          canvas._hoverBar = null;
+          canvas.style.cursor = 'default';
+          barGrouped(canvas, canvas._chartData);
+        }
+      });
+      
+      // Drag para scroll
+      let isDragging = false;
+      let startX = 0;
+      let startOffset = 0;
+      
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startOffset = canvas._scrollOffset || 0;
+        canvas.style.cursor = 'grabbing';
+      });
+      
+      canvas.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          const dpr = window.devicePixelRatio || 1;
+          const dx = (startX - e.clientX) * dpr;
+          canvas._scrollOffset = Math.max(0, startOffset + dx);
+          barGrouped(canvas, canvas._chartData);
+        }
+      });
+      
+      canvas.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          canvas.style.cursor = canvas._hoverBar ? 'pointer' : 'default';
+        }
+      });
+    }
+  }
+
+  return { clear, line, multiLine, barH, donut, barGrouped };
+})();
+
+/* -------------------------
+   8) Filters: preencher listas + aplicar
+--------------------------*/
+const Filters = (() => {
+  function fillSelect(select, items){
+    select.innerHTML = "";
+    for (const v of items){
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      select.appendChild(opt);
+    }
+  }
+
+  function applySearchToSelect(inputEl, selectEl){
+    const q = U.normalizeText(inputEl.value).toLowerCase();
+    for (const opt of Array.from(selectEl.options)){
+      const show = !q || opt.value.toLowerCase().includes(q);
+      opt.hidden = !show;
+    }
+  }
+
+  function selectedValues(selectEl){
+    return Array.from(selectEl.selectedOptions).map(o => o.value);
+  }
+
+  function get(){
+    const dtS = U.parseDateFlexible(el.dtStart.value);
+    const dtE = U.parseDateFlexible(el.dtEnd.value);
+    return {
+      dtStart: dtS,
+      dtEnd: dtE,
+      onlyCentral: el.onlyCentral.checked,
+      onlyDespachado: el.onlyDespachado.checked,
+      naturezas: selectedValues(el.natureSelect),
+      unidades: selectedValues(el.unitSelect),
+      recursos: selectedValues(el.resSelect),
+      viaturas: selectedValues(el.vehSelect),
+    };
+  }
+
+  function setDefaultFromMeta(){
+    if (!State.META.minDt || !State.META.maxDt) return;
+    const start = new Date(State.META.minDt); start.setHours(0,0,0,0);
+    const end = new Date(State.META.maxDt); end.setHours(23,59,0,0);
+    el.dtStart.value = U.toDateTimeLocal(start);
+    el.dtEnd.value = U.toDateTimeLocal(end);
+
+    el.onlyCentral.checked = false;
+    el.onlyDespachado.checked = false;
+
+    // limpar seleções (vazio = todos)
+    [el.natureSelect, el.unitSelect, el.resSelect, el.vehSelect].forEach(sel=>{
+      Array.from(sel.options).forEach(o => o.selected = false);
+    });
+
+    // limpar buscas
+    [el.natureSearch, el.unitSearch, el.resSearch, el.vehSearch].forEach(i => i.value = "");
+    // reaplicar visibilidade
+    applySearchToSelect(el.natureSearch, el.natureSelect);
+    applySearchToSelect(el.unitSearch, el.unitSelect);
+    applySearchToSelect(el.resSearch, el.resSelect);
+    applySearchToSelect(el.vehSearch, el.vehSelect);
+  }
+
+  function renderChips(f){
+    const chips = [];
+    if (f.dtStart && f.dtEnd){
+      chips.push(`Período: ${U.formatDate(f.dtStart)} → ${U.formatDate(f.dtEnd)}`);
+    }
+    chips.push(`Naturezas: ${f.naturezas?.length ? f.naturezas.length+" sel." : "todas"}`);
+    chips.push(`Unidades: ${f.unidades?.length ? f.unidades.length+" sel." : "todas"}`);
+    chips.push(`Recursos: ${f.recursos?.length ? f.recursos.length+" sel." : "todos"}`);
+    chips.push(`Viaturas: ${f.viaturas?.length ? f.viaturas.length+" sel." : "todas"}`);
+    if (f.onlyCentral) chips.push("Via central: sim");
+    if (f.onlyDespachado) chips.push("Despachadas: sim");
+    el.chipRow.innerHTML = chips.map(t => `<span class="chip">${U.escapeHtml(t)}</span>`).join("");
+  }
+
+  function apply(rows, f){
+    const out = [];
+    for (const r of rows){
+      if (!r.dt_ligacao) continue;
+      if (f.dtStart && r.dt_ligacao < f.dtStart) continue;
+      if (f.dtEnd && r.dt_ligacao > f.dtEnd) continue;
+
+      if (f.onlyCentral && r.via_central_bool !== true) continue;
+      if (f.onlyDespachado && !r.flag_despachado) continue;
+
+      if (f.naturezas?.length && !f.naturezas.includes(r.natureza_full)) continue;
+      if (f.unidades?.length && !f.unidades.includes(r.unidade_servico)) continue;
+      if (f.recursos?.length && !f.recursos.includes(r.recurso_prefixo_calc)) continue;
+      if (f.viaturas?.length && !f.viaturas.includes(r.viatura_calc)) continue;
+
+      out.push(r);
+    }
+    return out;
+  }
+
+  // período anterior equivalente (para delta em KPIs)
+  function previousPeriod(rows, f){
+    if (!f.dtStart || !f.dtEnd) return [];
+    const durMs = f.dtEnd.getTime() - f.dtStart.getTime();
+    if (!isFinite(durMs) || durMs <= 0) return [];
+    const prevEnd = new Date(f.dtStart.getTime() - 1000); // 1s antes
+    const prevStart = new Date(prevEnd.getTime() - durMs);
+    const pf = { ...f, dtStart: prevStart, dtEnd: prevEnd };
+    return apply(rows, pf);
+  }
+
+  function buildMetaLists(rows){
+    const setNat = new Set();
+    const setUnit = new Set();
+    const setRes = new Set();
+    const setVeh = new Set();
+    let min=null, max=null;
+
+    for (const r of rows){
+      if (r.dt_ligacao){
+        if (!min || r.dt_ligacao < min) min = r.dt_ligacao;
+        if (!max || r.dt_ligacao > max) max = r.dt_ligacao;
+      }
+      if (r.natureza_full && r.natureza_full !== "—") setNat.add(r.natureza_full);
+      if (r.unidade_servico && r.unidade_servico !== "—") setUnit.add(r.unidade_servico);
+      if (r.recurso_prefixo_calc && r.recurso_prefixo_calc !== "—") setRes.add(r.recurso_prefixo_calc);
+      if (r.viatura_calc && r.viatura_calc !== "—") setVeh.add(r.viatura_calc);
+    }
+
+    const sortPt = (a,b)=> a.localeCompare(b,"pt-BR");
+    return {
+      minDt: min, maxDt: max,
+      lists: {
+        naturezas: Array.from(setNat).sort(sortPt),
+        unidades: Array.from(setUnit).sort(sortPt),
+        recursos: Array.from(setRes).sort(sortPt),
+        viaturas: Array.from(setVeh).sort(sortPt),
+      }
+    };
+  }
+
+  return {
+    fillSelect, applySearchToSelect,
+    get, setDefaultFromMeta, renderChips, apply,
+    previousPeriod,
+    buildMetaLists
+  };
+})();
+
+/* -------------------------
+   9) Render: KPIs + páginas + tabelas
+--------------------------*/
+const Render = (() => {
+  function kpiCard({icon,title,value,subtitle,deltaPct}){
+    let dot = "";
+    let deltaText = "Sem comparação";
+    if (deltaPct != null && isFinite(deltaPct)){
+      const up = deltaPct >= 0;
+      const abs = Math.abs(deltaPct).toFixed(1);
+      deltaText = `${up ? "▲" : "▼"} ${abs}% vs período anterior`;
+      dot = up ? "good" : "warn";
+    }
+    return `
+      <div class="kpi">
+        <div class="head">
+          <p class="t">${U.escapeHtml(title)}</p>
+          <div class="icon">${U.escapeHtml(icon)}</div>
+        </div>
+        <p class="v">${U.escapeHtml(value)}</p>
+        <p class="s">${U.escapeHtml(subtitle || "")}</p>
+        <span class="delta"><span class="dot ${dot}"></span>${U.escapeHtml(deltaText)}</span>
+      </div>
+    `;
+  }
+
+  function renderOverview(){
+    const cur = State.FILTERED;
+    const prev = State.PREV;
+
+    const k = Agg.kpisOverview(cur);
+    const kp = Agg.kpisOverview(prev);
+
+    // deltas
+    const dTotal = Agg.periodDelta(k.total, kp.total);
+    const dDesp = Agg.periodDelta(k.desp, kp.desp);
+    const dMedResp = Agg.periodDelta(k.medResp, kp.medResp);
+    const dP90Resp = Agg.periodDelta(k.p90Resp, kp.p90Resp);
+    const dMedD2 = Agg.periodDelta(k.medEnrouteToOnscene, kp.medEnrouteToOnscene);
+    const dMedD1 = Agg.periodDelta(k.medDespToEnroute, kp.medDespToEnroute);
+
+    el.kpiGrid.innerHTML = [
+      kpiCard({icon:"📞", title:"Total de chamadas", value: k.total.toLocaleString("pt-BR"), subtitle:"Registros no período (após filtros)", deltaPct:dTotal}),
+      kpiCard({icon:"🚒", title:"Despachadas", value: `${k.desp.toLocaleString("pt-BR")} (${k.pctDesp.toFixed(1)}%)`, subtitle:"Indicador de acionamento", deltaPct:dDesp}),
+      kpiCard({icon:"⏱️", title:"Mediana resposta total", value: U.formatSecondsToHMS(k.medResp), subtitle:"t_empenho + t_desloc (quando existe)", deltaPct:dMedResp}),
+      kpiCard({icon:"📈", title:"P90 resposta total", value: U.formatSecondsToHMS(k.p90Resp), subtitle:"Piora (10% mais lentos)", deltaPct:dP90Resp}),
+      kpiCard({icon:"🚦", title:"Mediana Desp→Saída", value: U.formatSecondsToHMS(k.medDespToEnroute), subtitle:"despachado → a_caminho", deltaPct:dMedD1}),
+      kpiCard({icon:"🛣️", title:"Mediana Saída→Chegada", value: U.formatSecondsToHMS(k.medEnrouteToOnscene), subtitle:"a_caminho → no_local", deltaPct:dMedD2}),
+    ].join("");
+
+    // Charts
+    Charts.barGrouped(el.chartLine, Agg.groupByDayAndUnit(cur));
+
+    const topNat = Agg.countBy(cur, r=>r.natureza_full).slice(0,10)
+      .map(x=>({label:x.key, value:x.count}));
+    Charts.barH(el.chartBar, topNat, (v)=> String(v));
+
+    const groupCounts = Agg.countBy(cur, r=>r.natureza_grupo_calc);
+    const top7 = groupCounts.slice(0,7).map(x=>({label:x.key, value:x.count}));
+    const rest = groupCounts.slice(7).reduce((a,b)=>a+b.count,0);
+    const donutItems = rest>0 ? [...top7, {label:"Outros", value:rest}] : top7;
+    Charts.donut(el.chartDonut, donutItems);
+
+    // Insights
+    const topN = topNat[0];
+    const topG = donutItems[0];
+    const miss = k.missingStatus;
+    el.overviewInsights.innerHTML = `
+      <div><b>Via central:</b> ${k.viaCentral.toLocaleString("pt-BR")} (${k.pctCentral.toFixed(1)}%)</div>
+      <div style="margin-top:8px;"><b>Top natureza:</b> ${topN ? U.escapeHtml(topN.label) : "—"} (${topN ? topN.value : 0})</div>
+      <div style="margin-top:6px;"><b>Top grupo:</b> ${topG ? U.escapeHtml(topG.label) : "—"} (${topG ? topG.value : 0})</div>
+      <div style="margin-top:10px;">
+        <b>Completude timestamps (faltando):</b>
+        despachado ${miss.despachado} • a_caminho ${miss.a_caminho} • no_local ${miss.no_local} • em_controle ${miss.em_controle} • terminado ${miss.terminado}
+      </div>
+      <div style="margin-top:10px;opacity:.9;">
+        <b>Interpretação:</b> se <u>Saída→Chegada</u> (a_caminho→no_local) aumentar, pode indicar distância maior, tráfego, cobertura insuficiente ou atraso de mobilização.
+      </div>
+    `;
+
+    // Table
+    Table.render();
+  }
+
+  function renderTimes(){
+    const cur = State.FILTERED;
+    const prev = State.PREV;
+
+    const getArr = (k)=> cur.map(r=>r[k]);
+    const getArrP = (k)=> prev.map(r=>r[k]);
+
+    const med1 = Agg.median(getArr("d_desp_to_enroute_seg"));
+    const p901 = Agg.p90(getArr("d_desp_to_enroute_seg"));
+    const med2 = Agg.median(getArr("d_enroute_to_onscene_seg"));
+    const p902 = Agg.p90(getArr("d_enroute_to_onscene_seg"));
+    const med3 = Agg.median(getArr("d_onscene_to_control_seg"));
+    const med4 = Agg.median(getArr("d_control_to_done_seg"));
+    const medLi = Agg.median(getArr("d_lig_to_incl_seg"));
+
+    const med1p = Agg.median(getArrP("d_desp_to_enroute_seg"));
+    const med2p = Agg.median(getArrP("d_enroute_to_onscene_seg"));
+    const med3p = Agg.median(getArrP("d_onscene_to_control_seg"));
+    const med4p = Agg.median(getArrP("d_control_to_done_seg"));
+
+    el.kpiTimes.innerHTML = [
+      kpiCard({icon:"🚦", title:"Mediana Desp→Saída", value: U.formatSecondsToHMS(med1), subtitle:"despachado → a_caminho", deltaPct: Agg.periodDelta(med1, med1p)}),
+      kpiCard({icon:"📈", title:"P90 Desp→Saída", value: U.formatSecondsToHMS(p901), subtitle:"piora (10% mais lentos)", deltaPct: null}),
+      kpiCard({icon:"🛣️", title:"Mediana Saída→Chegada", value: U.formatSecondsToHMS(med2), subtitle:"a_caminho → no_local", deltaPct: Agg.periodDelta(med2, med2p)}),
+      kpiCard({icon:"📉", title:"P90 Saída→Chegada", value: U.formatSecondsToHMS(p902), subtitle:"deslocamento real (piora)", deltaPct: null}),
+      kpiCard({icon:"🧯", title:"Mediana No local→Controle", value: U.formatSecondsToHMS(med3), subtitle:"no_local → em_controle", deltaPct: Agg.periodDelta(med3, med3p)}),
+      kpiCard({icon:"✅", title:"Mediana Controle→Terminado", value: U.formatSecondsToHMS(med4), subtitle:"em_controle → terminado", deltaPct: Agg.periodDelta(med4, med4p)}),
+    ].join("");
+
+    // Barras por unidade (medianas)
+    const byUnit = new Map();
+    for (const r of cur){
+      const u = r.unidade_servico || "—";
+      if (!byUnit.has(u)) byUnit.set(u, { d1:[], d2:[] });
+      byUnit.get(u).d1.push(r.d_desp_to_enroute_seg);
+      byUnit.get(u).d2.push(r.d_enroute_to_onscene_seg);
+    }
+    const unitMedD1 = Array.from(byUnit.entries()).map(([u,obj])=>({
+      label:u, value: Agg.median(obj.d1) ?? 0
+    })).filter(x=>x.value>0).sort((a,b)=>b.value-a.value).slice(0,10);
+    const unitMedD2 = Array.from(byUnit.entries()).map(([u,obj])=>({
+      label:u, value: Agg.median(obj.d2) ?? 0
+    })).filter(x=>x.value>0).sort((a,b)=>b.value-a.value).slice(0,10);
+
+    Charts.barH(el.chartDispatchToEnroute, unitMedD1, U.formatSecondsToHMS);
+    Charts.barH(el.chartEnrouteToOnscene, unitMedD2, U.formatSecondsToHMS);
+
+    // Barras por natureza (medianas)
+    const byNat = new Map();
+    for (const r of cur){
+      const n = r.natureza_full || "—";
+      if (!byNat.has(n)) byNat.set(n, { d3:[], d4:[] });
+      byNat.get(n).d3.push(r.d_onscene_to_control_seg);
+      byNat.get(n).d4.push(r.d_control_to_done_seg);
+    }
+    const natMedD3 = Array.from(byNat.entries()).map(([n,obj])=>({
+      label:n, value: Agg.median(obj.d3) ?? 0
+    })).filter(x=>x.value>0).sort((a,b)=>b.value-a.value).slice(0,10);
+    const natMedD4 = Array.from(byNat.entries()).map(([n,obj])=>({
+      label:n, value: Agg.median(obj.d4) ?? 0
+    })).filter(x=>x.value>0).sort((a,b)=>b.value-a.value).slice(0,10);
+
+    Charts.barH(el.chartOnsceneToControl, natMedD3, U.formatSecondsToHMS);
+    Charts.barH(el.chartControlToDone, natMedD4, U.formatSecondsToHMS);
+
+    // Quality (completude por status)
+    const total = cur.length || 1;
+    const miss = {};
+    for (const f of Builder.STATUS_FIELDS){
+      miss[f] = cur.filter(r => !r.status_dt[f]).length;
+    }
+    el.timesQuality.innerHTML = `
+      <div><b>Ligação→Inclusão (mediana):</b> ${U.formatSecondsToHMS(medLi)} — indica tempo interno até registrar/incluir.</div>
+      <div style="margin-top:10px;"><b>Completude dos status (faltando no período):</b></div>
+      <div style="margin-top:6px;">
+        ${Builder.STATUS_FIELDS.map(s=> `<span class="chip">${U.escapeHtml(s)}: ${(100 - (miss[s]/total)*100).toFixed(1)}%</span>`).join("")}
+      </div>
+      <div style="margin-top:12px;opacity:.9;">
+        <b>Observação:</b> muitos valores faltantes podem distorcer medianas/P90. Priorize status com maior completude.
+      </div>
+    `;
+  }
+
+  function renderNatures(){
+    const cur = State.FILTERED;
+    const prev = State.PREV;
+
+    const byNat = Agg.countBy(cur, r=>r.natureza_full);
+    const top10 = byNat.slice(0,10).map(x=>({label:x.key, value:x.count}));
+    Charts.barH(el.chartNatureTop, top10, (v)=>String(v));
+
+    const trend = Agg.groupTrendByGroup(cur);
+    Charts.multiLine(el.chartGroupTrend, trend.series);
+
+    // KPIs naturezas
+    const total = cur.length;
+    const uniqueNat = new Set(cur.map(r=>r.natureza_full)).size;
+    const top = byNat[0]?.key || "—";
+
+    // crescimento simples vs período anterior (volume)
+    const prevTotal = prev.length;
+    const deltaVol = Agg.periodDelta(total, prevTotal);
+
+    el.kpiNatures.innerHTML = [
+      kpiCard({icon:"📦", title:"Volume (chamadas)", value: total.toLocaleString("pt-BR"), subtitle:"no período filtrado", deltaPct: deltaVol}),
+      kpiCard({icon:"🧩", title:"Diversidade de naturezas", value: uniqueNat.toLocaleString("pt-BR"), subtitle:"naturezas únicas no período", deltaPct: null}),
+      kpiCard({icon:"🏷️", title:"Natureza mais frequente", value: top.length>30 ? top.slice(0,30)+"…" : top, subtitle:"top 1 por volume", deltaPct: null}),
+      kpiCard({icon:"🧭", title:"Grupo mais frequente", value: Agg.countBy(cur, r=>r.natureza_grupo_calc)[0]?.key || "—", subtitle:"top grupo", deltaPct: null}),
+      kpiCard({icon:"🛣️", title:"Mediana Saída→Chegada", value: U.formatSecondsToHMS(Agg.median(cur.map(r=>r.d_enroute_to_onscene_seg))), subtitle:"a_caminho→no_local", deltaPct: null}),
+      kpiCard({icon:"🚦", title:"P90 Saída→Chegada", value: U.formatSecondsToHMS(Agg.p90(cur.map(r=>r.d_enroute_to_onscene_seg))), subtitle:"piora (10% mais lentos)", deltaPct: null}),
+    ].join("");
+
+    // tabela por natureza com medianas/p90
+    const map = new Map(); // nat -> {count, group, d2[], d3[]}
+    for (const r of cur){
+      const n = r.natureza_full || "—";
+      if (!map.has(n)) map.set(n, { count:0, group: r.natureza_grupo_calc || "—", d2:[], d3:[] });
+      const o = map.get(n);
+      o.count++;
+      o.d2.push(r.d_enroute_to_onscene_seg);
+      o.d3.push(r.d_onscene_to_control_seg);
+    }
+    const rows = Array.from(map.entries()).map(([n,o])=>{
+      const pct = total ? (o.count/total)*100 : 0;
+      return {
+        n, g:o.group, c:o.count, pct,
+        medD2: Agg.median(o.d2),
+        p90D2: Agg.p90(o.d2),
+        medD3: Agg.median(o.d3),
+      };
+    }).sort((a,b)=> b.c-a.c);
+
+    el.tbodyNatures.innerHTML = rows.slice(0,60).map(r=>`
+      <tr>
+        <td>${U.escapeHtml(r.n)}</td>
+        <td>${U.escapeHtml(r.g)}</td>
+        <td>${r.c.toLocaleString("pt-BR")}</td>
+        <td>${r.pct.toFixed(1)}%</td>
+        <td>${U.escapeHtml(U.formatSecondsToHMS(r.medD2))}</td>
+        <td>${U.escapeHtml(U.formatSecondsToHMS(r.p90D2))}</td>
+        <td>${U.escapeHtml(U.formatSecondsToHMS(r.medD3))}</td>
+      </tr>
+    `).join("");
+
+    el.noteNatures.textContent = `Mostrando até 60 naturezas. Use o filtro de Natureza para focar em um subconjunto específico.`;
+  }
+
+  function renderResources(){
+    const cur = State.FILTERED;
+    const prev = State.PREV;
+
+    const total = cur.length;
+
+    // top unidades e viaturas por volume
+    const topUnits = Agg.countBy(cur, r=>r.unidade_servico).slice(0,10).map(x=>({label:x.key, value:x.count}));
+    const topVeh = Agg.countBy(cur, r=>r.viatura_calc).slice(0,10).map(x=>({label:x.key, value:x.count}));
+
+    Charts.barH(el.chartUnitTop, topUnits, (v)=>String(v));
+    Charts.barH(el.chartVehicleTop, topVeh, (v)=>String(v));
+
+    // kpis recursos
+    const pctDesp = total ? (cur.filter(r=>r.flag_despachado).length/total)*100 : 0;
+    const medD2 = Agg.median(cur.map(r=>r.d_enroute_to_onscene_seg));
+    const p90D2 = Agg.p90(cur.map(r=>r.d_enroute_to_onscene_seg));
+    const topU = topUnits[0]?.label || "—";
+    const topV = topVeh[0]?.label || "—";
+
+    el.kpiResources.innerHTML = [
+      kpiCard({icon:"🏢", title:"Top unidade (volume)", value: topU.length>26 ? topU.slice(0,26)+"…" : topU, subtitle:"unidade_servico_nome", deltaPct:null}),
+      kpiCard({icon:"🚑", title:"Top viatura", value: topV, subtitle:"maior acionamento", deltaPct:null}),
+      kpiCard({icon:"🚒", title:"% Despachadas", value: pctDesp.toFixed(1)+"%", subtitle:"acionamento no período", deltaPct: Agg.periodDelta(pctDesp, prev.length ? (prev.filter(r=>r.flag_despachado).length/prev.length)*100 : null)}),
+      kpiCard({icon:"🛣️", title:"Mediana Saída→Chegada", value: U.formatSecondsToHMS(medD2), subtitle:"deslocamento real", deltaPct:null}),
+      kpiCard({icon:"📈", title:"P90 Saída→Chegada", value: U.formatSecondsToHMS(p90D2), subtitle:"piora (top 10%)", deltaPct:null}),
+      kpiCard({icon:"📊", title:"Unidades ativas", value: new Set(cur.map(r=>r.unidade_servico)).size.toLocaleString("pt-BR"), subtitle:"unidades no período", deltaPct:null}),
+    ].join("");
+
+    // tabela unidades: volume, % despachado, medianas
+    const map = new Map(); // unit -> stats
+    for (const r of cur){
+      const u = r.unidade_servico || "—";
+      if (!map.has(u)) map.set(u, { count:0, desp:0, d1:[], d2:[] });
+      const o = map.get(u);
+      o.count++;
+      if (r.flag_despachado) o.desp++;
+      o.d1.push(r.d_desp_to_enroute_seg);
+      o.d2.push(r.d_enroute_to_onscene_seg);
+    }
+
+    const rows = Array.from(map.entries()).map(([u,o])=>{
+      const pct = o.count ? (o.desp/o.count)*100 : 0;
+      return {
+        u, c:o.count, pct,
+        medD1: Agg.median(o.d1),
+        medD2: Agg.median(o.d2),
+        p90D2: Agg.p90(o.d2),
+      };
+    }).sort((a,b)=> b.c-a.c);
+
+    el.tbodyUnits.innerHTML = rows.slice(0,60).map(r=>`
+      <tr>
+        <td>${U.escapeHtml(r.u)}</td>
+        <td>${r.c.toLocaleString("pt-BR")}</td>
+        <td>${r.pct.toFixed(1)}%</td>
+        <td>${U.escapeHtml(U.formatSecondsToHMS(r.medD1))}</td>
+        <td>${U.escapeHtml(U.formatSecondsToHMS(r.medD2))}</td>
+        <td>${U.escapeHtml(U.formatSecondsToHMS(r.p90D2))}</td>
+      </tr>
+    `).join("");
+
+    el.noteUnits.textContent = `Mostrando até 60 unidades. Para análise fina, filtre por Unidade e compare tempos (Desp→Saída e Saída→Chegada).`;
+  }
+
+  function renderQualityBox(cur){
+    const total = cur.length || 1;
+    const missing = {};
+    for (const f of Builder.STATUS_FIELDS){
+      missing[f] = cur.filter(r => !r.status_dt[f]).length;
+    }
+    // alerta se status-chave estiverem muito faltantes
+    const pctNoLocal = 100 - (missing.no_local/total)*100;
+    const pctACaminho = 100 - (missing.a_caminho/total)*100;
+    const pctDesp = 100 - (missing.despachado/total)*100;
+
+    const warn = (pctNoLocal < 60 || pctACaminho < 60 || pctDesp < 60);
+    el.qualityBox.style.display = warn ? "block" : "none";
+    if (warn){
+      el.qualityBox.innerHTML = `
+        <b>Atenção: baixa completude de timestamps</b><br/>
+        despachado: ${pctDesp.toFixed(1)}% • a_caminho: ${pctACaminho.toFixed(1)}% • no_local: ${pctNoLocal.toFixed(1)}%<br/>
+        Isso pode distorcer medianas e P90. Considere filtrar por unidades/naturezas com dados mais completos.
+      `;
+    }
+  }
+
+  return {
+    renderOverview, renderTimes, renderNatures, renderResources, renderQualityBox
+  };
+})();
+
+/* -------------------------
+   10) Table module (overview)
+--------------------------*/
+const Table = (() => {
+  function matchesSearch(r, q){
+    if (!q) return true;
+    const hay = (
+      (r.natureza_full||"") + " " +
+      (r.unidade_servico||"") + " " +
+      (r.recurso_prefixo_calc||"") + " " +
+      (r.viatura_calc||"")
+    ).toLowerCase();
+    return hay.includes(q);
+  }
+
+  function sortRows(rows, sortBy, desc){
+    const sorted = [...rows];
+    sorted.sort((a,b)=> {
+      let aVal = a[sortBy];
+      let bVal = b[sortBy];
+      
+      // tratar valores nulos
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return desc ? 1 : -1;
+      if (bVal == null) return desc ? -1 : 1;
+      
+      // comparação
+      if (aVal < bVal) return desc ? 1 : -1;
+      if (aVal > bVal) return desc ? -1 : 1;
+      return 0;
+    });
+    return sorted;
+  }
+
+  function render(){
+    const q = U.normalizeText(State.table.search).toLowerCase();
+    let rows = State.FILTERED.filter(r => matchesSearch(r,q));
+    
+    // ordenar
+    rows = sortRows(rows, State.table.sortBy, State.table.sortDesc);
+
+    const total = rows.length;
+    const pageSize = State.table.pageSize;
+    const totalPages = Math.max(1, Math.ceil(total/pageSize));
+    State.table.page = Math.min(State.table.page, totalPages);
+
+    const start = (State.table.page-1)*pageSize;
+    const pageRows = rows.slice(start, start+pageSize);
+
+    el.tbody.innerHTML = pageRows.map(r=>{
+      const sd = r.status_dt;
+      return `
+        <tr>
+          <td>${U.escapeHtml(U.formatDate(r.dt_ligacao))}</td>
+          <td>${U.escapeHtml(r.natureza_full)}</td>
+          <td>${U.escapeHtml(r.unidade_servico)}</td>
+          <td>${U.escapeHtml(r.recurso_prefixo_calc)}</td>
+          <td>${U.escapeHtml(r.viatura_calc)}</td>
+          <td>${U.escapeHtml(U.formatDate(sd.despachado))}</td>
+          <td>${U.escapeHtml(U.formatDate(sd.a_caminho))}</td>
+          <td>${U.escapeHtml(U.formatDate(sd.no_local))}</td>
+          <td>${U.escapeHtml(U.formatDate(sd.em_controle))}</td>
+          <td>${U.escapeHtml(U.formatDate(sd.terminado))}</td>
+          <td>${U.escapeHtml(U.formatSecondsToHMS(r.d_desp_to_enroute_seg))}</td>
+          <td>${U.escapeHtml(U.formatSecondsToHMS(r.d_enroute_to_onscene_seg))}</td>
+        </tr>
+      `;
+    }).join("");
+
+    el.pageInfo.textContent = `Página ${State.table.page} de ${totalPages}`;
+    el.tableNote.textContent = `Mostrando ${pageRows.length.toLocaleString("pt-BR")} de ${total.toLocaleString("pt-BR")} registros (após filtros + busca).`;
+  }
+
+  function exportFiltered(){
+    const rows = State.FILTERED;
+    if (!rows.length){ alert("Sem dados filtrados para exportar."); return; }
+
+    // exportar colunas originais + derivados úteis
+    const baseCols = Object.keys(rows[0]).filter(k =>
+      !["status_dt","dt_ligacao","dt_inclusao"].includes(k)
+    );
+
+    const cols = Array.from(new Set([
+      ...baseCols,
+      "data","hora","diaSemana","mesAno",
+      "natureza_full","natureza_grupo_calc",
+      "unidade_servico","recurso_prefixo_calc","viatura_calc",
+      "d_desp_to_enroute_seg","d_enroute_to_onscene_seg","d_onscene_to_control_seg","d_control_to_done_seg",
+      "d_lig_to_incl_seg"
+    ]));
+
+    const lines = [];
+    lines.push(cols.map(csvEscape).join(","));
+    for (const r of rows){
+      lines.push(cols.map(c => csvEscape(r[c] ?? "")).join(","));
+    }
+    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cbmmg_filtrado_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function csvEscape(v){
+    const s = String(v).replace(/\r?\n/g," ").trim();
+    if (/[",]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+    return s;
+  }
+
+  return { render, exportFiltered };
+})();
+
+/* -------------------------
+   11) App: load CSV, build meta, apply filters, render all pages
+--------------------------*/
+const App = (() => {
+  async function readFileAsText(file){
+    return new Promise((resolve, reject)=>{
+      const r = new FileReader();
+      r.onload = ()=> resolve(String(r.result || ""));
+      r.onerror = reject;
+      r.readAsText(file, "utf-8");
+    });
+  }
+
+  function setStatus(){
+    if (!State.RAW.length){
+      el.statusBox.textContent = "Sem dados carregados";
+      return;
+    }
+    const min = U.formatDate(State.META.minDt);
+    const max = U.formatDate(State.META.maxDt);
+    el.statusBox.textContent = `Linhas: ${State.RAW.length.toLocaleString("pt-BR")} • Período: ${min} → ${max}`;
+  }
+
+  function loadIntoState(text){
+    const parsed = CSV.parse(text);
+    if (!parsed.header.length || !parsed.data.length) throw new Error("CSV vazio/ inválido.");
+
+    // build rows - manter todos os registros
+    const built = parsed.data.map(Builder.build);
+    State.RAW = built;
+
+    // meta lists + min/max
+    State.META = Filters.buildMetaLists(built);
+
+    // preencher selects
+    Filters.fillSelect(el.natureSelect, State.META.lists.naturezas);
+    Filters.fillSelect(el.unitSelect, State.META.lists.unidades);
+    Filters.fillSelect(el.resSelect, State.META.lists.recursos);
+    Filters.fillSelect(el.vehSelect, State.META.lists.viaturas);
+
+    // default filters min->max
+    Filters.setDefaultFromMeta();
+    setStatus();
+
+    // render default
+    run();
+  }
+
+  function run(){
+    if (!State.RAW.length){
+      setStatus();
+      return;
+    }
+    const f = Filters.get();
+    if (f.dtStart && f.dtEnd && f.dtEnd < f.dtStart){
+      alert("Fim não pode ser menor que o início.");
+      return;
+    }
+
+    Filters.renderChips(f);
+    State.FILTERED = Filters.apply(State.RAW, f);
+    State.PREV = Filters.previousPeriod(State.RAW, f);
+
+    // quality box (baseado no filtrado)
+    Render.renderQualityBox(State.FILTERED);
+
+    // render pages (todas para ficar pronto ao trocar abas)
+    Render.renderOverview();
+    Render.renderTimes();
+    Render.renderNatures();
+    Render.renderResources();
+
+    // atualizar status com tamanho do filtrado (sem perder info)
+    el.statusBox.textContent = `Filtrado: ${State.FILTERED.length.toLocaleString("pt-BR")} • Total: ${State.RAW.length.toLocaleString("pt-BR")} • Período: ${U.formatDate(f.dtStart)} → ${U.formatDate(f.dtEnd)}`;
+  }
+
+  function clearData(){
+    State.RAW = [];
+    State.FILTERED = [];
+    State.PREV = [];
+    State.META = { minDt:null, maxDt:null, lists:{} };
+
+    el.natureSelect.innerHTML = "";
+    el.unitSelect.innerHTML = "";
+    el.resSelect.innerHTML = "";
+    el.vehSelect.innerHTML = "";
+
+    el.kpiGrid.innerHTML = "";
+    el.kpiTimes.innerHTML = "";
+    el.kpiNatures.innerHTML = "";
+    el.kpiResources.innerHTML = "";
+
+    el.tbody.innerHTML = "";
+    el.tbodyNatures.innerHTML = "";
+    el.tbodyUnits.innerHTML = "";
+
+    Charts.clear(el.chartLine);
+    Charts.clear(el.chartBar);
+    Charts.clear(el.chartDonut);
+    Charts.clear(el.chartDispatchToEnroute);
+    Charts.clear(el.chartEnrouteToOnscene);
+    Charts.clear(el.chartOnsceneToControl);
+    Charts.clear(el.chartControlToDone);
+    Charts.clear(el.chartGroupTrend);
+    Charts.clear(el.chartNatureTop);
+    Charts.clear(el.chartUnitTop);
+    Charts.clear(el.chartVehicleTop);
+
+    el.overviewInsights.innerHTML = "";
+    el.timesQuality.innerHTML = "";
+    el.noteNatures.textContent = "";
+    el.noteUnits.textContent = "";
+
+    el.qualityBox.style.display = "none";
+    el.chipRow.innerHTML = "";
+    el.statusBox.textContent = "Sem dados carregados";
+  }
+
+  // Wire events
+  function wire(){
+    // navigation
+    el.nav.addEventListener("click", (e)=>{
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const pageId = btn.getAttribute("data-page");
+      if (!pageId) return;
+
+      Array.from(el.nav.querySelectorAll("button")).forEach(b=> b.classList.toggle("active", b===btn));
+      Object.entries(el.pages).forEach(([id,node])=>{
+        node.classList.toggle("active", id === pageId);
+      });
+
+      const titles = {
+        filtersPage: ["Filtros", "Defina período e cortes analíticos (natureza, unidade, recurso, viatura)."],
+        overviewPage: ["Visão Geral", "KPIs e visão executiva: volume, distribuição e ranking."],
+        timesPage: ["Tempos", "Gargalos entre status: despacho, saída, chegada, controle e encerramento."],
+        naturesPage: ["Naturezas", "Perfil de demanda: top, grupos e tempos por natureza."],
+        resourcesPage: ["Unidades/Viaturas", "Carga por unidade/viatura e eficiência por tempo."]
+      };
+      const [t, s] = titles[pageId] || ["Dashboard", ""];
+      el.pageTitle.textContent = t;
+      el.pageSubtitle.textContent = s;
+      // sem recomputar — já está tudo pronto. (Mas canvas pode precisar de resize)
+      // Re-render leve para ajustar canvases ao tamanho atual:
+      if (State.RAW.length) run();
+    });
+
+    // searches -> filter option visibility
+    el.natureSearch.addEventListener("input", ()=> Filters.applySearchToSelect(el.natureSearch, el.natureSelect));
+    el.unitSearch.addEventListener("input", ()=> Filters.applySearchToSelect(el.unitSearch, el.unitSelect));
+    el.resSearch.addEventListener("input", ()=> Filters.applySearchToSelect(el.resSearch, el.resSelect));
+    el.vehSearch.addEventListener("input", ()=> Filters.applySearchToSelect(el.vehSearch, el.vehSelect));
+
+    // load buttons
+    el.btnLoad.addEventListener("click", async ()=>{
+      try{
+        let text = U.normalizeText(el.csvPaste.value);
+        if (!text){
+          const file = el.fileInput.files?.[0];
+          if (!file){ alert("Selecione um CSV ou cole o conteúdo."); return; }
+          text = await readFileAsText(file);
+        }
+        loadIntoState(text);
+      }catch(err){
+        console.error(err);
+        alert("Erro ao carregar CSV. Veja o console.");
+      }
+    });
+
+    el.btnClearData.addEventListener("click", clearData);
+
+    // apply/reset filters
+    el.btnApply.addEventListener("click", ()=>{
+      State.table.page = 1;
+      run();
+    });
+
+    el.btnReset.addEventListener("click", ()=>{
+      if (!State.RAW.length) return;
+      Filters.setDefaultFromMeta();
+      State.table.page = 1;
+      run();
+    });
+
+    // table controls
+    el.tableSearch.addEventListener("input", ()=>{
+      State.table.search = el.tableSearch.value;
+      State.table.page = 1;
+      Table.render();
+    });
+    el.pageSize.addEventListener("change", ()=>{
+      State.table.pageSize = Number(el.pageSize.value);
+      State.table.page = 1;
+      Table.render();
+    });
+    el.prevPage.addEventListener("click", ()=>{
+      State.table.page = Math.max(1, State.table.page-1);
+      Table.render();
+    });
+    el.nextPage.addEventListener("click", ()=>{
+      State.table.page = State.table.page+1;
+      Table.render();
+    });
+    el.btnExport.addEventListener("click", Table.exportFiltered);
+
+    // resize -> redraw
+    window.addEventListener("resize", ()=>{
+      if (State.RAW.length) run();
+    });
+    
+    // ordenação da tabela
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const sortBy = th.getAttribute('data-sort');
+        if (State.table.sortBy === sortBy) {
+          State.table.sortDesc = !State.table.sortDesc;
+        } else {
+          State.table.sortBy = sortBy;
+          State.table.sortDesc = false;
+        }
+        
+        // atualizar indicadores
+        document.querySelectorAll('.sort-indicator').forEach(span => {
+          span.textContent = '';
+        });
+        const indicator = th.querySelector('.sort-indicator');
+        if (indicator) {
+          indicator.textContent = State.table.sortDesc ? '▼' : '▲';
+        }
+        
+        State.table.page = 1;
+        Table.render();
+      });
+    });
+  }
+
+  return { wire, loadIntoState, run };
+})();
+
+App.wire();
+
+// Carregamento automático do CSV
+(async function autoLoadCSV() {
+  try {
+    const response = await fetch('data/ocorrencias.csv');
+    if (!response.ok) {
+      console.warn('Arquivo data/ocorrencias.csv não encontrado. Carregue manualmente.');
+      return;
+    }
+    const text = await response.text();
+    if (text && text.trim()) {
+      console.log('Carregando data/ocorrencias.csv automaticamente...');
+      App.loadIntoState(text);
+    }
+  } catch (err) {
+    console.warn('Erro ao carregar automaticamente data/ocorrencias.csv:', err.message);
+  }
+})();
+</script>
+</body>
+</html>
