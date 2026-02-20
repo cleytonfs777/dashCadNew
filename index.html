@@ -1235,10 +1235,10 @@ const Charts = (() => {
 
   function empty(ctx, w,h, msg){
     ctx.fillStyle = "rgba(232,238,252,.80)";
-    ctx.font = `600 ${Math.floor(h*0.06)}px ${getFont()}`;
+    ctx.font = `600 ${Math.floor(h*0.030)}px ${getFont()}`;
     ctx.fillText(msg, 24, 44);
     ctx.fillStyle = "rgba(169,183,223,.75)";
-    ctx.font = `400 ${Math.floor(h*0.045)}px ${getFont()}`;
+    ctx.font = `400 ${Math.floor(h*0.036)}px ${getFont()}`;
     ctx.fillText("Ajuste filtros (período/natureza/unidade) para visualizar.", 24, 72);
   }
 
@@ -1255,7 +1255,7 @@ const Charts = (() => {
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0,0,w,h);
 
-    const pad = Math.floor(Math.min(w,h)*0.12);
+    const pad = Math.floor(Math.min(w,h)*0.18);
     axis(ctx,w,h,pad);
 
     if (!series.length){ empty(ctx,w,h,"Sem dados no período"); return; }
@@ -1309,7 +1309,7 @@ const Charts = (() => {
 
     // labels eixo Y
     ctx.fillStyle = "rgba(232,238,252,.75)";
-    ctx.font = `400 ${Math.floor(h*0.05)}px ${getFont()}`;
+    ctx.font = `400 ${Math.floor(h*0.042)}px ${getFont()}`;
     ctx.fillText("0", pad-16, h-pad+18);
     ctx.fillText(String(maxY), 10, pad+10);
 
@@ -1332,7 +1332,7 @@ const Charts = (() => {
     // Instrução
     if (totalContentWidth > w - 2*pad) {
       ctx.fillStyle = "rgba(169,183,223,.65)";
-      ctx.font = `400 ${Math.floor(h*0.032)}px ${getFont()}`;
+      ctx.font = `400 ${Math.floor(h*0.024)}px ${getFont()}`;
       ctx.fillText("🔍 Scroll p/ zoom • Arraste p/ mover", w - 220, h - 8);
     }
 
@@ -1396,7 +1396,7 @@ const Charts = (() => {
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0,0,w,h);
 
-    const pad = Math.floor(Math.min(w,h)*0.12);
+    const pad = Math.floor(Math.min(w,h)*0.18);
     axis(ctx,w,h,pad);
 
     if (!multi.length || !multi[0].points.length){ empty(ctx,w,h,"Sem dados no período"); return; }
@@ -1459,7 +1459,7 @@ const Charts = (() => {
     ctx.strokeStyle = "rgba(255,255,255,.15)";
     ctx.strokeRect(lx - 6, ly - 4, legendW + 12, legendH);
     
-    ctx.font = `400 ${Math.floor(h*0.040)}px ${getFont()}`;
+    ctx.font = `400 ${Math.floor(h*0.033)}px ${getFont()}`;
     multi.slice(0,4).forEach((s, idx)=>{
       const y = ly + 10 + idx*16;
       ctx.fillStyle = colors[idx % colors.length];
@@ -1489,7 +1489,7 @@ const Charts = (() => {
     // Instrução
     if (totalContentWidth > w - 2*pad) {
       ctx.fillStyle = "rgba(169,183,223,.65)";
-      ctx.font = `400 ${Math.floor(h*0.032)}px ${getFont()}`;
+      ctx.font = `400 ${Math.floor(h*0.024)}px ${getFont()}`;
       ctx.fillText("🔍 Scroll p/ zoom • Arraste p/ mover", w - 220, h - 8);
     }
 
@@ -1560,13 +1560,13 @@ const Charts = (() => {
     if (!canvas._scrollOffset) canvas._scrollOffset = 0;
 
     const maxV = Math.max(1, ...items.map(i=>i.value));
-    const padY = Math.floor(h*0.08);
+    const padY = Math.floor(h*0.14);
     const baseBarH = 28;
     const barHeight = Math.max(18, baseBarH * canvas._zoomLevel);
     const gap = 8 * canvas._zoomLevel;
     const totalContentHeight = items.length * (barHeight + gap);
 
-    ctx.font = `400 ${Math.floor(h*0.045)}px ${getFont()}`;
+    ctx.font = `400 ${Math.floor(h*0.036)}px ${getFont()}`;
 
     // Área de clipping para scroll
     ctx.save();
@@ -1611,7 +1611,7 @@ const Charts = (() => {
     // Instrução de scroll
     if (totalContentHeight > h - 2*padY) {
       ctx.fillStyle = "rgba(169,183,223,.65)";
-      ctx.font = `400 ${Math.floor(h*0.032)}px ${getFont()}`;
+      ctx.font = `400 ${Math.floor(h*0.024)}px ${getFont()}`;
       ctx.fillText("🔍 Scroll p/ zoom • Arraste p/ mover", w - 220, h - 8);
     }
 
@@ -1716,14 +1716,14 @@ const Charts = (() => {
 
     // center
     ctx.fillStyle = "rgba(232,238,252,.92)";
-    ctx.font = `800 ${Math.floor(h*0.065)}px ${getFont()}`;
+    ctx.font = `800 ${Math.floor(h*0.051)}px ${getFont()}`;
     ctx.fillText("Total", cx-26, cy-6);
-    ctx.font = `900 ${Math.floor(h*0.080)}px ${getFont()}`;
+    ctx.font = `900 ${Math.floor(h*0.063)}px ${getFont()}`;
     ctx.fillText(String(total.toLocaleString("pt-BR")), cx-30, cy+26);
 
     // legend
     const lx = Math.floor(w*0.60), ly = Math.floor(h*0.22);
-    ctx.font = `400 ${Math.floor(h*0.045)}px ${getFont()}`;
+    ctx.font = `400 ${Math.floor(h*0.036)}px ${getFont()}`;
     items.slice(0,7).forEach((it, idx)=>{
       const y = ly + idx*22;
       ctx.fillStyle = colors[idx%colors.length];
@@ -1742,7 +1742,7 @@ const Charts = (() => {
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0,0,w,h);
 
-    const pad = Math.floor(Math.min(w,h)*0.12);
+    const pad = Math.floor(Math.min(w,h)*0.18);
     axis(ctx,w,h,pad);
 
     if (!dataByDayUnit.series.length){ 
@@ -1853,19 +1853,19 @@ const Charts = (() => {
       
       // texto do tooltip
       ctx.fillStyle = "rgba(232,238,252,.95)";
-      ctx.font = `600 ${Math.floor(h*0.042)}px ${getFont()}`;
+      ctx.font = `600 ${Math.floor(h*0.033)}px ${getFont()}`;
       ctx.fillText(bar.unit, tx+10, ty+20);
-      ctx.font = `400 ${Math.floor(h*0.038)}px ${getFont()}`;
+      ctx.font = `400 ${Math.floor(h*0.030)}px ${getFont()}`;
       ctx.fillStyle = "rgba(169,183,223,.95)";
       ctx.fillText(`Data: ${bar.day}`, tx+10, ty+40);
       ctx.fillStyle = bar.color;
-      ctx.font = `700 ${Math.floor(h*0.048)}px ${getFont()}`;
+      ctx.font = `700 ${Math.floor(h*0.039)}px ${getFont()}`;
       ctx.fillText(`${bar.value} ocorrências`, tx+10, ty+62);
     }
 
     // labels eixo Y
     ctx.fillStyle = "rgba(232,238,252,.75)";
-    ctx.font = `400 ${Math.floor(h*0.05)}px ${getFont()}`;
+    ctx.font = `400 ${Math.floor(h*0.042)}px ${getFont()}`;
     ctx.fillText("0", pad-16, h-pad+18);
     ctx.fillText(String(maxY), 10, pad+10);
 
@@ -1897,7 +1897,7 @@ const Charts = (() => {
     ctx.strokeStyle = "rgba(255,255,255,.15)";
     ctx.strokeRect(legendX - 6, legendY - 4, legendW + 12, legendH + 8);
     
-    ctx.font = `400 ${Math.floor(h*0.038)}px ${getFont()}`;
+    ctx.font = `400 ${Math.floor(h*0.030)}px ${getFont()}`;
     const maxLegendItems = Math.floor((legendH - 10) / 16);
     series.slice(0, maxLegendItems).forEach((s, idx)=>{
       const y = legendY + 10 + idx*16;
@@ -1910,7 +1910,7 @@ const Charts = (() => {
     
     // Instrução de zoom
     ctx.fillStyle = "rgba(169,183,223,.75)";
-    ctx.font = `400 ${Math.floor(h*0.035)}px ${getFont()}`;
+    ctx.font = `400 ${Math.floor(h*0.027)}px ${getFont()}`;
     ctx.fillText("🔍 Scroll para zoom • Arraste para mover", w - 280, h - 10);
     
     // Guardar dados para interação
